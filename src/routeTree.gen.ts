@@ -13,7 +13,9 @@ import { Route as TagsRouteImport } from './routes/tags'
 import { Route as StudentsRouteImport } from './routes/students'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ReservationsRouteImport } from './routes/reservations'
+import { Route as MyReservationsRouteImport } from './routes/my-reservations'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BorrowRouteImport } from './routes/borrow'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TagsRoute = TagsRouteImport.update({
@@ -36,9 +38,19 @@ const ReservationsRoute = ReservationsRouteImport.update({
   path: '/reservations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyReservationsRoute = MyReservationsRouteImport.update({
+  id: '/my-reservations',
+  path: '/my-reservations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BorrowRoute = BorrowRouteImport.update({
+  id: '/borrow',
+  path: '/borrow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,7 +61,9 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/borrow': typeof BorrowRoute
   '/dashboard': typeof DashboardRoute
+  '/my-reservations': typeof MyReservationsRoute
   '/reservations': typeof ReservationsRoute
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
@@ -57,7 +71,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/borrow': typeof BorrowRoute
   '/dashboard': typeof DashboardRoute
+  '/my-reservations': typeof MyReservationsRoute
   '/reservations': typeof ReservationsRoute
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
@@ -66,7 +82,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/borrow': typeof BorrowRoute
   '/dashboard': typeof DashboardRoute
+  '/my-reservations': typeof MyReservationsRoute
   '/reservations': typeof ReservationsRoute
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
@@ -76,7 +94,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/borrow'
     | '/dashboard'
+    | '/my-reservations'
     | '/reservations'
     | '/resources'
     | '/students'
@@ -84,7 +104,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/borrow'
     | '/dashboard'
+    | '/my-reservations'
     | '/reservations'
     | '/resources'
     | '/students'
@@ -92,7 +114,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/borrow'
     | '/dashboard'
+    | '/my-reservations'
     | '/reservations'
     | '/resources'
     | '/students'
@@ -101,7 +125,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BorrowRoute: typeof BorrowRoute
   DashboardRoute: typeof DashboardRoute
+  MyReservationsRoute: typeof MyReservationsRoute
   ReservationsRoute: typeof ReservationsRoute
   ResourcesRoute: typeof ResourcesRoute
   StudentsRoute: typeof StudentsRoute
@@ -138,11 +164,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-reservations': {
+      id: '/my-reservations'
+      path: '/my-reservations'
+      fullPath: '/my-reservations'
+      preLoaderRoute: typeof MyReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/borrow': {
+      id: '/borrow'
+      path: '/borrow'
+      fullPath: '/borrow'
+      preLoaderRoute: typeof BorrowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -157,7 +197,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BorrowRoute: BorrowRoute,
   DashboardRoute: DashboardRoute,
+  MyReservationsRoute: MyReservationsRoute,
   ReservationsRoute: ReservationsRoute,
   ResourcesRoute: ResourcesRoute,
   StudentsRoute: StudentsRoute,

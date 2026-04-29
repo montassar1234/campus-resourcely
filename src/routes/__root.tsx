@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
+import { RoleProvider } from "@/lib/role";
 
 import appCss from "../styles.css?url";
 
@@ -79,8 +80,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster richColors position="top-right" />
+      <RoleProvider>
+        <Outlet />
+        <Toaster richColors position="top-right" />
+      </RoleProvider>
     </QueryClientProvider>
   );
 }
