@@ -57,16 +57,16 @@ function Landing() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
+                to="/borrow"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground shadow-elevated transition hover:translate-y-[-1px] hover:bg-accent/90"
+              >
+                Borrow equipment <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
                 to="/dashboard"
                 className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-elevated transition hover:translate-y-[-1px] hover:bg-primary/90"
               >
-                Launch dashboard <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/resources"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
-              >
-                Browse equipment
+                Staff dashboard
               </Link>
             </div>
             <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 text-sm">
