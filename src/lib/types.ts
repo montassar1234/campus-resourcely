@@ -40,6 +40,7 @@ export interface Reservation {
   checkoutDate: string;
   expectedReturnDate: string;
   actualReturnDate: string | null;
+  purpose?: string | null;
   status: ReservationStatus;
 }
 

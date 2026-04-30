@@ -35,6 +35,8 @@ export const api = {
     get: (id: number) => request<Student>(`/students/${id}`),
     search: (keyword: string) =>
       request<Student[]>(`/students/search?keyword=${encodeURIComponent(keyword)}`),
+    login: (data: { email: string; password: string }) =>
+      request<Student>("/students/login", { method: "POST", body: JSON.stringify(data) }),
     create: (data: Partial<Student>) =>
       request<Student>("/students", { method: "POST", body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Student>) =>
@@ -70,8 +72,23 @@ export const api = {
     byStatus: (status: ReservationStatus) =>
       request<Reservation[]>(`/reservations/status/${status}`),
     overdue: () => request<Reservation[]>("/reservations/overdue/list"),
-    create: (data: { studentId: number; resourceId: number; expectedReturnDate: string }) =>
+    create: (data: { studentId: number; resourceId: number; purpose?: string }) =>
       request<Reservation>("/reservations", { method: "POST", body: JSON.stringify(data) }),
+    createRequest: (data: {
+      username: string;
+      email: string;
+      password: string;
+      fullName: string;
+      phone: string;
+      department: string;
+      level: string;
+      resourceId: number;
+      purpose?: string;
+    }) =>
+      request<Reservation>("/reservations/request", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
     markReturned: (id: number) =>
       request<Reservation>(`/reservations/${id}/return`, { method: "PUT" }),
     remove: (id: number) => request<void>(`/reservations/${id}`, { method: "DELETE" }),

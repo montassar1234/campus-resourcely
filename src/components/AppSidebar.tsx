@@ -21,29 +21,29 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { useRole } from "@/lib/role";
+import { useAuth } from "@/lib/auth";
 
 const studentItems = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Borrow Equipment", url: "/borrow", icon: PackageSearch },
   { title: "My Reservations", url: "/my-reservations", icon: ClipboardList },
 ];
 
-const staffItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Students", url: "/students", icon: Users },
-  { title: "Resources", url: "/resources", icon: Boxes },
-  { title: "Tags", url: "/tags", icon: Tags },
-  { title: "Reservations", url: "/reservations", icon: CalendarCheck },
+const adminItems = [
+  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Students", url: "/admin/students", icon: Users },
+  { title: "Resources", url: "/admin/resources", icon: Boxes },
+  { title: "Tags", url: "/admin/tags", icon: Tags },
+  { title: "Reservations", url: "/admin/reservations", icon: CalendarCheck },
 ];
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { role } = useRole();
+  const { student, admin } = useAuth();
+  const isAdmin = pathname.startsWith("/admin");
 
-  const primary = role === "student" ? studentItems : staffItems;
-  const secondary = role === "student" ? staffItems : studentItems;
-  const primaryLabel = role === "student" ? "Student Portal" : "Workspace";
-  const secondaryLabel = role === "student" ? "Staff tools" : "Student preview";
+  const primary = isAdmin ? adminItems : studentItems;
+  const primaryLabel = isAdmin ? "Admin Workspace" : "Student Portal";
 
   return (
     <Sidebar collapsible="icon">
@@ -69,32 +69,14 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {primary.map((item) => {
-                const active = pathname.startsWith(item.url);
+                const active =
+                  item.url === "/"
+                    ? pathname === "/"
+                    : pathname === item.url || pathname.startsWith(`${item.url}/`);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={active}>
                       <Link to={item.url} className="flex items-center gap-3">
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>{secondaryLabel}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondary.map((item) => {
-                const active = pathname.startsWith(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={active}>
-                      <Link to={item.url} className="flex items-center gap-3 opacity-80">
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>
@@ -110,14 +92,14 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3 rounded-md px-2 py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/20 text-sidebar-primary-foreground text-xs font-semibold">
-            {role === "student" ? "ST" : "AS"}
+            {isAdmin ? "AD" : "ST"}
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-xs font-medium text-sidebar-foreground">
-              {role === "student" ? "Student" : "Admin Staff"}
+              {isAdmin ? admin?.username || "Admin Staff" : student?.fullName || "Student"}
             </span>
             <span className="text-[10px] text-sidebar-foreground/60">
-              {role === "student" ? "demo@campus.edu" : "staff@campus.edu"}
+              {isAdmin ? "admin@campus.edu" : student?.email || "student@campus.edu"}
             </span>
           </div>
         </div>

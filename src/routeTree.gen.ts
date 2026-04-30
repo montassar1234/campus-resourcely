@@ -17,6 +17,13 @@ import { Route as MyReservationsRouteImport } from './routes/my-reservations'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BorrowRouteImport } from './routes/borrow'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminTagsRouteImport } from './routes/admin/tags'
+import { Route as AdminStudentsRouteImport } from './routes/admin/students'
+import { Route as AdminResourcesRouteImport } from './routes/admin/resources'
+import { Route as AdminReservationsRouteImport } from './routes/admin/reservations'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminAuthRouteImport } from './routes/admin/auth'
 
 const TagsRoute = TagsRouteImport.update({
   id: '/tags',
@@ -58,6 +65,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTagsRoute = AdminTagsRouteImport.update({
+  id: '/admin/tags',
+  path: '/admin/tags',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminStudentsRoute = AdminStudentsRouteImport.update({
+  id: '/admin/students',
+  path: '/admin/students',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminResourcesRoute = AdminResourcesRouteImport.update({
+  id: '/admin/resources',
+  path: '/admin/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReservationsRoute = AdminReservationsRouteImport.update({
+  id: '/admin/reservations',
+  path: '/admin/reservations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/admin/dashboard',
+  path: '/admin/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuthRoute = AdminAuthRouteImport.update({
+  id: '/admin/auth',
+  path: '/admin/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +110,13 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
   '/tags': typeof TagsRoute
+  '/admin/auth': typeof AdminAuthRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reservations': typeof AdminReservationsRoute
+  '/admin/resources': typeof AdminResourcesRoute
+  '/admin/students': typeof AdminStudentsRoute
+  '/admin/tags': typeof AdminTagsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +127,13 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
   '/tags': typeof TagsRoute
+  '/admin/auth': typeof AdminAuthRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reservations': typeof AdminReservationsRoute
+  '/admin/resources': typeof AdminResourcesRoute
+  '/admin/students': typeof AdminStudentsRoute
+  '/admin/tags': typeof AdminTagsRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +145,13 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
   '/tags': typeof TagsRoute
+  '/admin/auth': typeof AdminAuthRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reservations': typeof AdminReservationsRoute
+  '/admin/resources': typeof AdminResourcesRoute
+  '/admin/students': typeof AdminStudentsRoute
+  '/admin/tags': typeof AdminTagsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +164,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/students'
     | '/tags'
+    | '/admin/auth'
+    | '/admin/dashboard'
+    | '/admin/reservations'
+    | '/admin/resources'
+    | '/admin/students'
+    | '/admin/tags'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +181,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/students'
     | '/tags'
+    | '/admin/auth'
+    | '/admin/dashboard'
+    | '/admin/reservations'
+    | '/admin/resources'
+    | '/admin/students'
+    | '/admin/tags'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -121,6 +198,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/students'
     | '/tags'
+    | '/admin/auth'
+    | '/admin/dashboard'
+    | '/admin/reservations'
+    | '/admin/resources'
+    | '/admin/students'
+    | '/admin/tags'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +216,13 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   StudentsRoute: typeof StudentsRoute
   TagsRoute: typeof TagsRoute
+  AdminAuthRoute: typeof AdminAuthRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminReservationsRoute: typeof AdminReservationsRoute
+  AdminResourcesRoute: typeof AdminResourcesRoute
+  AdminStudentsRoute: typeof AdminStudentsRoute
+  AdminTagsRoute: typeof AdminTagsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +283,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tags': {
+      id: '/admin/tags'
+      path: '/admin/tags'
+      fullPath: '/admin/tags'
+      preLoaderRoute: typeof AdminTagsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/students': {
+      id: '/admin/students'
+      path: '/admin/students'
+      fullPath: '/admin/students'
+      preLoaderRoute: typeof AdminStudentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/resources': {
+      id: '/admin/resources'
+      path: '/admin/resources'
+      fullPath: '/admin/resources'
+      preLoaderRoute: typeof AdminResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reservations': {
+      id: '/admin/reservations'
+      path: '/admin/reservations'
+      fullPath: '/admin/reservations'
+      preLoaderRoute: typeof AdminReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/auth': {
+      id: '/admin/auth'
+      path: '/admin/auth'
+      fullPath: '/admin/auth'
+      preLoaderRoute: typeof AdminAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +344,13 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   StudentsRoute: StudentsRoute,
   TagsRoute: TagsRoute,
+  AdminAuthRoute: AdminAuthRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminReservationsRoute: AdminReservationsRoute,
+  AdminResourcesRoute: AdminResourcesRoute,
+  AdminStudentsRoute: AdminStudentsRoute,
+  AdminTagsRoute: AdminTagsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

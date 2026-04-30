@@ -1,25 +1,21 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
 import { ClipboardList, CalendarDays, AlertTriangle, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
-import { useRole } from "@/lib/role";
+import { hasStudentSession, useAuth } from "@/lib/auth";
 import { PageShell } from "@/components/PageShell";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export const Route = createFileRoute("/my-reservations")({
+  beforeLoad: () => {
+    if (!hasStudentSession()) {
+      throw redirect({ to: "/" });
+    }
+  },
   head: () => ({
     meta: [
-      { title: "My Reservations — Campus Resource Hub" },
+      { title: "My Reservations - Campus Resource Hub" },
       {
         name: "description",
         content: "View the status of your equipment reservation requests.",
@@ -30,56 +26,24 @@ export const Route = createFileRoute("/my-reservations")({
 });
 
 function MyReservationsPage() {
-  const { studentId, setStudentId } = useRole();
-  const [pendingId, setPendingId] = useState<string>(studentId);
-
-  useEffect(() => {
-    setPendingId(studentId);
-  }, [studentId]);
-
-  const { data: students } = useQuery({ queryKey: ["students"], queryFn: api.students.list });
-
+  const { student } = useAuth();
   const { data: reservations, isLoading, isError } = useQuery({
-    queryKey: ["reservations", "student", studentId],
-    queryFn: () => api.reservations.byStudent(Number(studentId)),
-    enabled: !!studentId,
+    queryKey: ["reservations", "student", student?.id],
+    queryFn: () => api.reservations.byStudent(Number(student!.id)),
+    enabled: !!student?.id,
   });
-
-  const activeStudent = (students ?? []).find((s) => String(s.id) === studentId);
 
   return (
     <PageShell title="My Reservations" subtitle="Track the status of your borrowing requests">
-      {/* Identity panel */}
       <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft md:flex-row md:items-end md:justify-between">
         <div className="flex-1">
-          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Viewing reservations for
-          </label>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            <Select value={pendingId} onValueChange={setPendingId}>
-              <SelectTrigger className="w-full sm:w-[280px]">
-                <SelectValue placeholder="Select your student profile…" />
-              </SelectTrigger>
-              <SelectContent>
-                {(students ?? []).map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.profile?.fullName || s.username}
-                    {s.profile?.department ? ` · ${s.profile.department}` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => setStudentId(pendingId)} disabled={!pendingId}>
-              Load
-            </Button>
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Signed in student
           </div>
-          {activeStudent && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Signed in as <span className="font-medium text-foreground">
-                {activeStudent.profile?.fullName || activeStudent.username}
-              </span>
-            </p>
-          )}
+          <div className="mt-2 text-lg font-semibold text-foreground">
+            {student?.fullName || "Student"}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">{student?.email}</p>
         </div>
         <Link
           to="/borrow"
@@ -89,13 +53,7 @@ function MyReservationsPage() {
         </Link>
       </div>
 
-      {!studentId ? (
-        <EmptyState
-          icon={ClipboardList}
-          title="Select your student profile"
-          description="Choose your profile above to view your reservation history."
-        />
-      ) : isLoading ? (
+      {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-24 animate-pulse rounded-2xl border border-border bg-card/60" />
@@ -173,6 +131,12 @@ function MyReservationsPage() {
                     </div>
                   )}
                 </dl>
+
+                {r.purpose && (
+                  <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">Purpose:</span> {r.purpose}
+                  </div>
+                )}
 
                 {overdue && (
                   <div className="mt-3 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">

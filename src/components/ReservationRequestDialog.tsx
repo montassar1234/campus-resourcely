@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type { Resource } from "@/lib/types";
-import { useRole } from "@/lib/role";
+import { useAuth } from "@/lib/auth";
 import {
   Dialog,
   DialogContent,
@@ -20,10 +20,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type FormValues = {
-  studentId: string;
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  phone: string;
+  department: string;
+  level: string;
   resourceId: string;
-  checkoutDate: string;
-  expectedReturnDate: string;
   purpose: string;
   agreement: boolean;
 };
@@ -38,11 +42,7 @@ export function ReservationRequestDialog({
   resource: Resource | null;
 }) {
   const qc = useQueryClient();
-  const { studentId: storedStudentId, setStudentId } = useRole();
-  const today = new Date().toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-
-  const { data: students } = useQuery({ queryKey: ["students"], queryFn: api.students.list });
+  const { loginStudent } = useAuth();
 
   const {
     register,
@@ -53,10 +53,14 @@ export function ReservationRequestDialog({
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
-      studentId: storedStudentId || "",
+      username: "",
+      email: "",
+      password: "",
+      fullName: "",
+      phone: "",
+      department: "",
+      level: "",
       resourceId: resource ? String(resource.id) : "",
-      checkoutDate: today,
-      expectedReturnDate: tomorrow,
       purpose: "",
       agreement: false,
     },
@@ -65,29 +69,43 @@ export function ReservationRequestDialog({
   useEffect(() => {
     if (open) {
       reset({
-        studentId: storedStudentId || "",
+        username: "",
+        email: "",
+        password: "",
+        fullName: "",
+        phone: "",
+        department: "",
+        level: "",
         resourceId: resource ? String(resource.id) : "",
-        checkoutDate: today,
-        expectedReturnDate: tomorrow,
         purpose: "",
         agreement: false,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, resource]);
+  }, [open, resource, reset]);
 
   const agreement = watch("agreement");
 
   const mut = useMutation({
     mutationFn: (v: FormValues) =>
-      api.reservations.create({
-        studentId: Number(v.studentId),
+      api.reservations.createRequest({
+        username: v.username,
+        email: v.email,
+        password: v.password,
+        fullName: v.fullName,
+        phone: v.phone,
+        department: v.department,
+        level: v.level,
         resourceId: Number(v.resourceId),
-        expectedReturnDate: v.expectedReturnDate,
+        purpose: v.purpose,
       }),
-    onSuccess: (_data, v) => {
+    onSuccess: (data) => {
       toast.success("Reservation request submitted successfully.");
-      setStudentId(v.studentId);
+      loginStudent({
+        id: String(data.studentId),
+        username: watch("username"),
+        fullName: watch("fullName"),
+        email: watch("email"),
+      });
       qc.invalidateQueries({ queryKey: ["resources"] });
       qc.invalidateQueries({ queryKey: ["resources", "available"] });
       qc.invalidateQueries({ queryKey: ["reservations"] });
@@ -99,86 +117,111 @@ export function ReservationRequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Request resource</DialogTitle>
+          <DialogTitle className="font-display text-xl">Student request form</DialogTitle>
           <DialogDescription>
             {resource ? (
               <>
-                Borrowing <span className="font-medium text-foreground">{resource.name}</span> ·{" "}
-                <span className="font-mono text-xs">{resource.assetCode}</span>
+                Fill this form before taking{" "}
+                <span className="font-medium text-foreground">{resource.name}</span>.
               </>
             ) : (
-              "Submit a borrowing request for review."
+              "Submit your identity and request details for staff review."
             )}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit((v) => mut.mutate(v))} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Student
-            </Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              {...register("studentId", { required: "Please select your student profile" })}
-            >
-              <option value="">Select your student profile…</option>
-              {(students ?? []).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.profile?.fullName || s.username} {s.profile?.department ? `· ${s.profile.department}` : ""}
-                </option>
-              ))}
-            </select>
-            {errors.studentId && (
-              <p className="text-xs text-destructive">{errors.studentId.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Resource
-            </Label>
-            <Input
-              value={resource ? `${resource.name} (${resource.assetCode})` : ""}
-              readOnly
-              className="bg-secondary/60"
-            />
-            <input type="hidden" {...register("resourceId", { required: true })} />
-          </div>
-
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Checkout date
+                Full name
               </Label>
               <Input
-                type="date"
-                {...register("checkoutDate", { required: "Required" })}
-                onChange={(e) => {
-                  setValue("checkoutDate", e.target.value);
-                }}
+                placeholder="Aminah Bello"
+                {...register("fullName", { required: "Full name is required" })}
               />
-              {errors.checkoutDate && (
-                <p className="text-xs text-destructive">{errors.checkoutDate.message}</p>
-              )}
+              {errors.fullName && <p className="text-xs text-destructive">{errors.fullName.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Expected return
+                Username
               </Label>
               <Input
-                type="date"
-                {...register("expectedReturnDate", {
-                  required: "Required",
-                  validate: (val, formValues) =>
-                    new Date(val) > new Date(formValues.checkoutDate) ||
-                    "Return date must be after checkout date",
+                placeholder="aminah"
+                {...register("username", {
+                  required: "Username is required",
+                  minLength: { value: 3, message: "Username must contain at least 3 characters" },
                 })}
               />
-              {errors.expectedReturnDate && (
-                <p className="text-xs text-destructive">{errors.expectedReturnDate.message}</p>
-              )}
+              {errors.username && <p className="text-xs text-destructive">{errors.username.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Email
+              </Label>
+              <Input
+                type="email"
+                placeholder="aminah@campus.edu"
+                {...register("email", { required: "Email is required" })}
+              />
+              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Password
+              </Label>
+              <Input
+                type="password"
+                placeholder="Minimum 6 characters"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: { value: 6, message: "Password must contain at least 6 characters" },
+                })}
+              />
+              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Phone
+              </Label>
+              <Input
+                placeholder="+234700100001"
+                {...register("phone", { required: "Phone is required" })}
+              />
+              {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Department
+              </Label>
+              <Input
+                placeholder="Computer Science"
+                {...register("department", { required: "Department is required" })}
+              />
+              {errors.department && <p className="text-xs text-destructive">{errors.department.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Level
+              </Label>
+              <Input
+                placeholder="Level 400"
+                {...register("level", { required: "Level is required" })}
+              />
+              {errors.level && <p className="text-xs text-destructive">{errors.level.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Resource
+              </Label>
+              <Input
+                value={resource ? `${resource.name} (${resource.assetCode})` : ""}
+                readOnly
+                className="bg-secondary/60"
+              />
+              <input type="hidden" {...register("resourceId", { required: true })} />
             </div>
           </div>
 
@@ -188,7 +231,7 @@ export function ReservationRequestDialog({
             </Label>
             <Textarea
               rows={3}
-              placeholder="e.g. Final year project, Media club event, Lab experiment…"
+              placeholder="e.g. Final year project, Media club event, Lab experiment..."
               {...register("purpose")}
             />
           </div>
@@ -204,8 +247,8 @@ export function ReservationRequestDialog({
               {...register("agreement", { validate: (v) => v === true || "You must accept the terms" })}
             />
             <span className="text-xs leading-relaxed text-muted-foreground">
-              I confirm that I will return the resource before the expected return date and in good
-              condition.
+              I confirm that I will return the resource on time and in good condition, and that the
+              information provided here is correct.
             </span>
           </label>
           {errors.agreement && (
@@ -217,7 +260,7 @@ export function ReservationRequestDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending}>
-              {mut.isPending ? "Submitting…" : "Submit request"}
+              {mut.isPending ? "Submitting..." : "Submit request"}
             </Button>
           </DialogFooter>
         </form>
