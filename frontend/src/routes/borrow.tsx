@@ -1,9 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search, Package, PackageSearch, Sparkles, ShieldCheck, Clock } from "lucide-react";
 import { api } from "@/lib/api";
-import { hasStudentSession } from "@/lib/auth";
+import { useRequireStudent } from "@/lib/auth";
 import type { Resource } from "@/lib/types";
 import { PageShell } from "@/components/PageShell";
 import { EmptyState } from "@/components/EmptyState";
@@ -12,11 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/borrow")({
-  beforeLoad: () => {
-    if (!hasStudentSession()) {
-      throw redirect({ to: "/" });
-    }
-  },
   head: () => ({
     meta: [
       { title: "Borrow Equipment — Campus Resource Hub" },
@@ -30,10 +25,13 @@ export const Route = createFileRoute("/borrow")({
 });
 
 function BorrowPage() {
+  const { student, ready } = useRequireStudent();
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [selected, setSelected] = useState<Resource | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  if (!ready || !student) return null;
 
   const { data: resources, isLoading, isError, refetch } = useQuery({
     queryKey: ["resources", "available"],

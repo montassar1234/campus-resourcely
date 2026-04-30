@@ -1,9 +1,18 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasAdminSession } from "@/lib/auth";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin/")({
-  beforeLoad: () => {
-    throw redirect({ to: hasAdminSession() ? "/admin/dashboard" : "/admin/auth" });
-  },
-  component: () => null,
+  component: AdminIndexRoute,
 });
+
+function AdminIndexRoute() {
+  const navigate = useNavigate();
+  const { admin } = useAuth();
+
+  useEffect(() => {
+    navigate({ to: admin ? "/admin/dashboard" : "/admin/auth", replace: true });
+  }, [admin, navigate]);
+
+  return null;
+}

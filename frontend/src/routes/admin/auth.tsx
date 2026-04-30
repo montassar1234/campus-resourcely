@@ -1,7 +1,8 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
-import { useAuth, hasAdminSession } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,17 +12,17 @@ type AdminLoginValues = {
   password: string;
 };
 
+const ADMIN_CREDENTIALS = [
+  { username: "admin", password: "admin123" },
+  { username: "test", password: "test" },
+];
+
 export const Route = createFileRoute("/admin/auth")({
-  beforeLoad: () => {
-    if (hasAdminSession()) {
-      throw redirect({ to: "/admin/dashboard" });
-    }
-  },
   component: AdminAuthPage,
 });
 
 function AdminAuthPage() {
-  const { loginAdmin } = useAuth();
+  const { admin, loginAdmin } = useAuth();
   const navigate = useNavigate();
   const {
     register,
@@ -31,6 +32,12 @@ function AdminAuthPage() {
   } = useForm<AdminLoginValues>({
     defaultValues: { username: "admin", password: "" },
   });
+
+  useEffect(() => {
+    if (admin) {
+      navigate({ to: "/admin/dashboard", replace: true });
+    }
+  }, [admin, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -56,23 +63,10 @@ function AdminAuthPage() {
           </p>
 
           <div className="mt-4 rounded-2xl border border-dashed border-border bg-secondary/40 p-4 text-xs text-muted-foreground">
-            Demo credentials: <span className="font-medium text-foreground">admin</span> / <span className="font-medium text-foreground">admin123</span>
+            Demo credentials: <span className="font-medium text-foreground">admin</span> / <span className="font-medium text-foreground">admin123</span> or <span className="font-medium text-foreground">test</span> / <span className="font-medium text-foreground">test</span>
           </div>
 
-          <form
-            className="mt-6 space-y-4"
-            onSubmit={handleSubmit((values) => {
-              const username = values.username.trim();
-              const password = values.password.trim();
-
-              if (username !== "admin" || password !== "admin123") {
-                setError("password", { message: "Invalid admin credentials" });
-                return;
-              }
-              loginAdmin({ username });
-              navigate({ to: "/admin/dashboard" });
-            })}
-          >
+          <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Username
@@ -96,10 +90,28 @@ function AdminAuthPage() {
               {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button
+              type="button"
+              className="w-full"
+              onClick={handleSubmit((values) => {
+                const username = values.username.trim();
+                const password = values.password.trim();
+                const validCredential = ADMIN_CREDENTIALS.find(
+                  (credential) =>
+                    credential.username === username && credential.password === password,
+                );
+
+                if (!validCredential) {
+                  setError("password", { message: "Invalid admin credentials" });
+                  return;
+                }
+                loginAdmin({ username });
+                navigate({ to: "/admin/dashboard" });
+              })}
+            >
               Enter admin dashboard
             </Button>
-          </form>
+          </div>
         </section>
       </div>
     </div>

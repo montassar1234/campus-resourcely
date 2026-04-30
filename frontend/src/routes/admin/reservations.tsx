@@ -1,12 +1,13 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasAdminSession } from "@/lib/auth";
+import { createFileRoute } from "@tanstack/react-router";
+import { useRequireAdmin } from "@/lib/auth";
 import { ReservationsPage } from "@/routes/reservations";
 
 export const Route = createFileRoute("/admin/reservations")({
-  beforeLoad: () => {
-    if (!hasAdminSession()) {
-      throw redirect({ to: "/admin/auth" });
-    }
-  },
-  component: ReservationsPage,
+  component: AdminReservationsRoute,
 });
+
+function AdminReservationsRoute() {
+  const { admin, ready } = useRequireAdmin();
+  if (!ready || !admin) return null;
+  return <ReservationsPage />;
+}

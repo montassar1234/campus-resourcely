@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 type StudentSession = {
   id: string;
@@ -12,6 +13,7 @@ type AdminSession = {
 };
 
 interface AuthContextValue {
+  ready: boolean;
   student: StudentSession | null;
   admin: AdminSession | null;
   loginStudent: (student: StudentSession) => void;
@@ -58,16 +60,19 @@ export function getStoredStudentSession() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
   const [student, setStudent] = useState<StudentSession | null>(null);
   const [admin, setAdmin] = useState<AdminSession | null>(null);
 
   useEffect(() => {
     setStudent(readStorage<StudentSession>(STUDENT_KEY));
     setAdmin(readStorage<AdminSession>(ADMIN_KEY));
+    setReady(true);
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
+      ready,
       student,
       admin,
       loginStudent: (session) => {
@@ -87,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         writeStorage(ADMIN_KEY, null);
       },
     }),
-    [student, admin],
+    [ready, student, admin],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -97,4 +102,30 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
+}
+
+export function useRequireAdmin() {
+  const navigate = useNavigate();
+  const { admin, ready } = useAuth();
+
+  useEffect(() => {
+    if (ready && !admin) {
+      navigate({ to: "/admin/auth", replace: true });
+    }
+  }, [admin, ready, navigate]);
+
+  return { admin, ready };
+}
+
+export function useRequireStudent() {
+  const navigate = useNavigate();
+  const { student, ready } = useAuth();
+
+  useEffect(() => {
+    if (ready && !student) {
+      navigate({ to: "/", replace: true });
+    }
+  }, [student, ready, navigate]);
+
+  return { student, ready };
 }

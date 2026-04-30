@@ -1,18 +1,13 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ClipboardList, CalendarDays, AlertTriangle, ArrowRight } from "lucide-react";
 import { api } from "@/lib/api";
-import { hasStudentSession, useAuth } from "@/lib/auth";
+import { useRequireStudent } from "@/lib/auth";
 import { PageShell } from "@/components/PageShell";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusBadge } from "@/components/StatusBadge";
 
 export const Route = createFileRoute("/my-reservations")({
-  beforeLoad: () => {
-    if (!hasStudentSession()) {
-      throw redirect({ to: "/" });
-    }
-  },
   head: () => ({
     meta: [
       { title: "My Reservations - Campus Resource Hub" },
@@ -26,12 +21,14 @@ export const Route = createFileRoute("/my-reservations")({
 });
 
 function MyReservationsPage() {
-  const { student } = useAuth();
+  const { student, ready } = useRequireStudent();
   const { data: reservations, isLoading, isError } = useQuery({
     queryKey: ["reservations", "student", student?.id],
     queryFn: () => api.reservations.byStudent(Number(student!.id)),
     enabled: !!student?.id,
   });
+
+  if (!ready || !student) return null;
 
   return (
     <PageShell title="My Reservations" subtitle="Track the status of your borrowing requests">
