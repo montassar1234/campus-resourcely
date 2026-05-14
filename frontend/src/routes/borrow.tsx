@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, Package, PackageSearch, Sparkles, ShieldCheck, Clock } from "lucide-react";
+import { Search, Package, PackageSearch, Sparkles, ShieldCheck, Clock, CalendarRange } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRequireStudent } from "@/lib/auth";
 import type { Resource } from "@/lib/types";
@@ -14,10 +14,10 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/borrow")({
   head: () => ({
     meta: [
-      { title: "Borrow Equipment — Campus Resource Hub" },
+      { title: "Borrow Equipment - Campus Resource Hub" },
       {
         name: "description",
-        content: "Browse available campus equipment and submit a reservation request.",
+        content: "Browse campus equipment and request a reservation from the availability calendar.",
       },
     ],
   }),
@@ -31,11 +31,10 @@ function BorrowPage() {
   const [selected, setSelected] = useState<Resource | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (!ready || !student) return null;
-
   const { data: resources, isLoading, isError, refetch } = useQuery({
-    queryKey: ["resources", "available"],
-    queryFn: api.resources.available,
+    queryKey: ["resources"],
+    queryFn: api.resources.list,
+    enabled: ready && !!student,
   });
   const { data: tags } = useQuery({ queryKey: ["tags"], queryFn: api.tags.list });
 
@@ -54,9 +53,10 @@ function BorrowPage() {
     return list;
   }, [resources, activeTag, search]);
 
+  if (!ready || !student) return null;
+
   return (
-    <PageShell title="Borrow Equipment" subtitle="Browse and request available campus resources">
-      {/* Hero */}
+    <PageShell title="Borrow Equipment" subtitle="Choose the right item, then request dates from the booking calendar">
       <section
         className="relative mb-8 overflow-hidden rounded-3xl border border-border p-6 text-primary-foreground md:p-10"
         style={{ background: "var(--gradient-hero)" }}
@@ -66,36 +66,38 @@ function BorrowPage() {
             <Sparkles className="h-3.5 w-3.5" /> Student Portal
           </div>
           <h2 className="mt-4 font-display text-3xl font-semibold leading-tight md:text-4xl">
-            Borrow university equipment in a few clicks.
+            Book equipment with a real availability calendar.
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed opacity-90 md:text-base">
-            Browse what's available right now, then submit a quick reservation request. A staff
-            member will review and confirm before you take any resource off campus.
+            Open any resource, choose your preferred start date from the calendar, and send a clean
+            reservation request for staff approval before pickup.
           </p>
           <div className="mt-6 flex flex-wrap gap-3 text-xs">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur">
-              <ShieldCheck className="h-3.5 w-3.5" /> Request before borrowing
+              <ShieldCheck className="h-3.5 w-3.5" /> Approval before borrowing
             </span>
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur">
-              <Clock className="h-3.5 w-3.5" /> Return on time, every time
+              <CalendarRange className="h-3.5 w-3.5" /> Date-based availability
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur">
+              <Clock className="h-3.5 w-3.5" /> Duration chosen by you
             </span>
           </div>
         </div>
       </section>
 
-      {/* Filters */}
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search equipment…"
+            placeholder="Search equipment..."
             className="pl-9"
           />
         </div>
         <div className="text-xs text-muted-foreground">
-          {filtered.length} item{filtered.length === 1 ? "" : "s"} available
+          {filtered.length} item{filtered.length === 1 ? "" : "s"} found
         </div>
       </div>
 
@@ -130,10 +132,7 @@ function BorrowPage() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-52 animate-pulse rounded-2xl border border-border bg-card/60"
-            />
+            <div key={i} className="h-52 animate-pulse rounded-2xl border border-border bg-card/60" />
           ))}
         </div>
       ) : isError ? (
@@ -151,8 +150,8 @@ function BorrowPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={PackageSearch}
-          title="No equipment is currently available"
-          description="Try clearing filters or check back later — items may free up after returns."
+          title="No equipment matched your search"
+          description="Try clearing filters or search for another resource type."
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -166,7 +165,7 @@ function BorrowPage() {
                   <Package className="h-5 w-5" />
                 </div>
                 <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-success">
-                  {r.quantity > 0 ? `${r.quantity} available` : "Unavailable"}
+                  {r.quantity > 0 ? `${r.quantity} free now` : "Booked today"}
                 </span>
               </div>
               <h3 className="mt-4 font-display text-lg font-semibold leading-tight">{r.name}</h3>
@@ -187,16 +186,19 @@ function BorrowPage() {
                   ))}
                 </div>
               )}
+              <p className="mt-4 text-sm text-muted-foreground">
+                Open the calendar to pick your preferred reservation start date and send a request
+                to staff.
+              </p>
               <div className="mt-auto pt-5">
                 <Button
                   className="w-full"
-                  disabled={r.quantity <= 0}
                   onClick={() => {
                     setSelected(r);
                     setDialogOpen(true);
                   }}
                 >
-                  Request Resource
+                  View booking calendar
                 </Button>
               </div>
             </article>

@@ -14,6 +14,7 @@ import com.academic.smartlibrary.exception.BusinessException;
 import com.academic.smartlibrary.exception.ResourceNotFoundException;
 import com.academic.smartlibrary.repository.StudentRepository;
 import java.util.List;
+import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,6 +46,7 @@ public class StudentService {
 
     public StudentResponse create(StudentRequest request) {
         validateUniqueStudent(request, null);
+        validatePasswordForCreate(request.password());
         Student student = buildStudent(new Student(), request);
         return toResponse(studentRepository.save(student));
     }
@@ -109,7 +111,7 @@ public class StudentService {
     private Student buildStudent(Student student, StudentRequest request) {
         student.setUsername(request.username());
         student.setEmail(request.email());
-        student.setPassword(request.password());
+        student.setPassword(resolvePassword(student, request.password()));
 
         StudentProfile profile = student.getProfile();
         if (profile == null) {
@@ -122,6 +124,32 @@ public class StudentService {
         profile.setStudent(student);
         student.setProfile(profile);
         return student;
+    }
+
+    private void validatePasswordForCreate(String password) {
+        if (!StringUtils.hasText(password)) {
+            throw new BusinessException("Password is required");
+        }
+        validatePasswordLength(password.trim());
+    }
+
+    private String resolvePassword(Student student, String password) {
+        if (!StringUtils.hasText(password)) {
+            if (student.getId() == null) {
+                throw new BusinessException("Password is required");
+            }
+            return student.getPassword();
+        }
+
+        String normalizedPassword = password.trim();
+        validatePasswordLength(normalizedPassword);
+        return normalizedPassword;
+    }
+
+    private void validatePasswordLength(String password) {
+        if (password.length() < 6 || password.length() > 60) {
+            throw new BusinessException("Password must contain between 6 and 60 characters");
+        }
     }
 
     private void validateUniqueStudent(StudentRequest request, Long currentId) {

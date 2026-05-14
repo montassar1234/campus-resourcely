@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,13 +20,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "reservations")
+@Table(name = "notifications")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Reservation {
+public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,27 +37,22 @@ public class Reservation {
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "resource_id")
-    private Resource resource;
-
-    @Column(nullable = false)
-    private LocalDate startDate;
-
-    @Column(nullable = false)
-    private Integer durationDays;
-
-    @Column
-    private LocalDate checkoutDate;
-
-    @Column
-    private LocalDate expectedReturnDate;
-
-    private LocalDate actualReturnDate;
-
-    @Column(length = 500)
-    private String purpose;
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ReservationStatus status;
+    private NotificationType type;
+
+    @Column(nullable = false, length = 500)
+    private String message;
+
+    @Column(nullable = false)
+    private LocalDate notificationDate;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private boolean read;
 }

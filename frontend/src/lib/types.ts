@@ -29,7 +29,8 @@ export interface Resource {
   tags: Tag[];
 }
 
-export type ReservationStatus = "ACTIVE" | "RETURNED" | "OVERDUE";
+export type ReservationStatus = "PENDING" | "REJECTED" | "APPROVED" | "ACTIVE" | "RETURNED" | "OVERDUE";
+export type NotificationType = "AUTO_RETURN_REMINDER" | "ADMIN_RETURN_ALERT";
 
 export interface Reservation {
   id: number;
@@ -37,11 +38,27 @@ export interface Reservation {
   studentName: string;
   resourceId: number;
   resourceName: string;
-  checkoutDate: string;
-  expectedReturnDate: string;
+  startDate: string;
+  endDate: string;
+  durationDays: number;
+  weekdayDurationDays: number;
+  checkoutDate: string | null;
+  expectedReturnDate: string | null;
   actualReturnDate: string | null;
   purpose?: string | null;
   status: ReservationStatus;
+}
+
+export interface Notification {
+  id: number;
+  studentId: number;
+  reservationId: number;
+  resourceName: string;
+  message: string;
+  type: NotificationType;
+  notificationDate: string;
+  createdAt: string;
+  read: boolean;
 }
 
 export interface DashboardSummary {

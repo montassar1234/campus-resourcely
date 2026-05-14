@@ -2,6 +2,7 @@ package com.academic.smartlibrary.service;
 
 import com.academic.smartlibrary.dto.request.ResourceRequest;
 import com.academic.smartlibrary.dto.response.ResourceResponse;
+import com.academic.smartlibrary.dto.response.ResourceTagResponse;
 import com.academic.smartlibrary.entity.Resource;
 import com.academic.smartlibrary.entity.ResourceTag;
 import com.academic.smartlibrary.exception.BusinessException;
@@ -101,7 +102,9 @@ public class ResourceService {
                 resource.getType(),
                 resource.getAssetCode(),
                 resource.getQuantity(),
-                resource.getTags().stream().map(ResourceTag::getName).collect(Collectors.toSet())
+                resource.getTags().stream()
+                        .map(tag -> new ResourceTagResponse(tag.getId(), tag.getName(), 0))
+                        .collect(Collectors.toSet())
         );
     }
 }

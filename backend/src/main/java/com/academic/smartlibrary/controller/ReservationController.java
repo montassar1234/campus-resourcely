@@ -1,6 +1,7 @@
 package com.academic.smartlibrary.controller;
 
 import com.academic.smartlibrary.dto.request.ReservationRequest;
+import com.academic.smartlibrary.dto.request.StudentBorrowRequest;
 import com.academic.smartlibrary.dto.request.StudentReservationRequest;
 import com.academic.smartlibrary.dto.response.ReservationResponse;
 import com.academic.smartlibrary.entity.ReservationStatus;
@@ -43,6 +44,11 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.findByStudent(studentId));
     }
 
+    @GetMapping("/resource/{resourceId}")
+    public ResponseEntity<List<ReservationResponse>> getReservationsByResource(@PathVariable Long resourceId) {
+        return ResponseEntity.ok(reservationService.findByResource(resourceId));
+    }
+
     @GetMapping("/status/{status}")
     public ResponseEntity<List<ReservationResponse>> getReservationsByStatus(@PathVariable ReservationStatus status) {
         return ResponseEntity.ok(reservationService.findByStatus(status));
@@ -61,6 +67,16 @@ public class ReservationController {
     @PostMapping("/request")
     public ResponseEntity<ReservationResponse> createStudentReservation(@Valid @RequestBody StudentReservationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.createStudentReservation(request));
+    }
+
+    @PostMapping("/request/student")
+    public ResponseEntity<ReservationResponse> createStudentBorrowRequest(@Valid @RequestBody StudentBorrowRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.createStudentBorrowRequest(request));
+    }
+
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ReservationResponse> approveReservation(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.approve(id));
     }
 
     @PutMapping("/{id}/return")

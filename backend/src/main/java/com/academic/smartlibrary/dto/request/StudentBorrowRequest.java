@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
-public record ReservationRequest(
+public record StudentBorrowRequest(
         @NotNull(message = "Student id is required")
         Long studentId,
         @NotNull(message = "Resource id is required")

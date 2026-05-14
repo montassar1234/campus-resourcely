@@ -107,7 +107,7 @@ export function DashboardPage() {
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
               <h3 className="font-display text-lg font-semibold">Recent reservations</h3>
-              <p className="text-xs text-muted-foreground">Latest checkouts across the campus</p>
+              <p className="text-xs text-muted-foreground">Latest reservation activity across the campus</p>
             </div>
             <Link to="/admin/reservations" className="text-xs font-medium text-accent hover:underline">
               View all →
@@ -122,7 +122,10 @@ export function DashboardPage() {
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">{r.resourceName}</div>
                   <div className="truncate text-xs text-muted-foreground">
-                    {r.studentName} · expected {new Date(r.expectedReturnDate).toLocaleDateString()}
+                    {r.studentName} ·{" "}
+                    {r.expectedReturnDate
+                      ? `expected ${new Date(r.expectedReturnDate).toLocaleDateString()}`
+                      : "awaiting approval"}
                   </div>
                 </div>
                 <StatusBadge status={r.status} />
@@ -144,7 +147,7 @@ export function DashboardPage() {
               <div key={r.id} className="px-6 py-3 text-sm">
                 <div className="font-medium">{r.resourceName}</div>
                 <div className="text-xs text-muted-foreground">
-                  {r.studentName} · due {new Date(r.expectedReturnDate).toLocaleDateString()}
+                  {r.studentName} · due {new Date(r.expectedReturnDate!).toLocaleDateString()}
                 </div>
               </div>
             ))}

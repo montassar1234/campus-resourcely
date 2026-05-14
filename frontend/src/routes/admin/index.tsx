@@ -8,11 +8,12 @@ export const Route = createFileRoute("/admin/")({
 
 function AdminIndexRoute() {
   const navigate = useNavigate();
-  const { admin } = useAuth();
+  const { admin, ready } = useAuth();
 
   useEffect(() => {
+    if (!ready) return;
     navigate({ to: admin ? "/admin/dashboard" : "/admin/auth", replace: true });
-  }, [admin, navigate]);
+  }, [admin, ready, navigate]);
 
   return null;
 }

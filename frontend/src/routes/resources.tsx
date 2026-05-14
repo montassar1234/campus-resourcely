@@ -234,12 +234,12 @@ function ResourceDialog({
 
   const mut = useMutation({
     mutationFn: (values: FormValues) => {
-      const payload: Partial<Resource> = {
+      const payload = {
         name: values.name,
         type: values.type,
         assetCode: values.assetCode,
         quantity: Number(values.quantity),
-        tags: values.tagIds.map((id) => ({ id } as Tag)),
+        tagIds: values.tagIds,
       };
       return editing ? api.resources.update(editing.id, payload) : api.resources.create(payload);
     },
@@ -277,10 +277,14 @@ function ResourceDialog({
               />
             </Field>
           </div>
-          <Field label="Tags">
+          <Field label="Tags" error={errors.tagIds?.message as string | undefined}>
             <Controller
               control={control}
               name="tagIds"
+              rules={{
+                validate: (value) =>
+                  value.length > 0 || "Select at least one tag",
+              }}
               render={({ field }) => (
                 <div className="flex flex-wrap gap-1.5">
                   {tags.length === 0 && (

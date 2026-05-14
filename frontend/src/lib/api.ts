@@ -1,5 +1,6 @@
 import type {
   DashboardSummary,
+  Notification,
   Reservation,
   ReservationStatus,
   Resource,
@@ -60,20 +61,38 @@ export const api = {
       request<Resource[]>(`/resources/search/type?type=${encodeURIComponent(type)}`),
     searchTag: (name: string) =>
       request<Resource[]>(`/resources/search/tag?name=${encodeURIComponent(name)}`),
-    create: (data: Partial<Resource>) =>
+    create: (data: { name: string; type: string; assetCode: string; quantity: number; tagIds: number[] }) =>
       request<Resource>("/resources", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: Partial<Resource>) =>
+    update: (id: number, data: { name: string; type: string; assetCode: string; quantity: number; tagIds: number[] }) =>
       request<Resource>(`/resources/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`/resources/${id}`, { method: "DELETE" }),
   },
   reservations: {
     list: () => request<Reservation[]>("/reservations"),
     byStudent: (id: number) => request<Reservation[]>(`/reservations/student/${id}`),
+    byResource: (id: number) => request<Reservation[]>(`/reservations/resource/${id}`),
     byStatus: (status: ReservationStatus) =>
       request<Reservation[]>(`/reservations/status/${status}`),
     overdue: () => request<Reservation[]>("/reservations/overdue/list"),
-    create: (data: { studentId: number; resourceId: number; purpose?: string }) =>
+    create: (data: {
+      studentId: number;
+      resourceId: number;
+      startDate: string;
+      durationDays?: number;
+      purpose?: string;
+    }) =>
       request<Reservation>("/reservations", { method: "POST", body: JSON.stringify(data) }),
+    createStudentRequest: (data: {
+      studentId: number;
+      resourceId: number;
+      startDate: string;
+      durationDays?: number;
+      purpose?: string;
+    }) =>
+      request<Reservation>("/reservations/request/student", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
     createRequest: (data: {
       username: string;
       email: string;
@@ -83,14 +102,30 @@ export const api = {
       department: string;
       level: string;
       resourceId: number;
+      durationDays?: number;
       purpose?: string;
     }) =>
       request<Reservation>("/reservations/request", {
         method: "POST",
         body: JSON.stringify(data),
       }),
+    approve: (id: number) =>
+      request<Reservation>(`/reservations/${id}/approve`, { method: "PUT" }),
     markReturned: (id: number) =>
       request<Reservation>(`/reservations/${id}/return`, { method: "PUT" }),
     remove: (id: number) => request<void>(`/reservations/${id}`, { method: "DELETE" }),
+  },
+  notifications: {
+    byStudent: (studentId: number) =>
+      request<Notification[]>(`/notifications/student/${studentId}`),
+    markRead: (id: number) =>
+      request<Notification>(`/notifications/${id}/read`, { method: "PUT" }),
+    markAllRead: (studentId: number) =>
+      request<void>(`/notifications/student/${studentId}/read-all`, { method: "PUT" }),
+    sendReturnAlert: (reservationId: number, data?: { message?: string }) =>
+      request<Notification>(`/notifications/reservations/${reservationId}/alert`, {
+        method: "POST",
+        body: JSON.stringify(data ?? {}),
+      }),
   },
 };

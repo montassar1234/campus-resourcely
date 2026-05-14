@@ -13,6 +13,7 @@ import { Route as TagsRouteImport } from './routes/tags'
 import { Route as StudentsRouteImport } from './routes/students'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as ReservationsRouteImport } from './routes/reservations'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MyReservationsRouteImport } from './routes/my-reservations'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BorrowRouteImport } from './routes/borrow'
@@ -43,6 +44,11 @@ const ResourcesRoute = ResourcesRouteImport.update({
 const ReservationsRoute = ReservationsRouteImport.update({
   id: '/reservations',
   path: '/reservations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MyReservationsRoute = MyReservationsRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/borrow': typeof BorrowRoute
   '/dashboard': typeof DashboardRoute
   '/my-reservations': typeof MyReservationsRoute
+  '/notifications': typeof NotificationsRoute
   '/reservations': typeof ReservationsRoute
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/borrow': typeof BorrowRoute
   '/dashboard': typeof DashboardRoute
   '/my-reservations': typeof MyReservationsRoute
+  '/notifications': typeof NotificationsRoute
   '/reservations': typeof ReservationsRoute
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/borrow': typeof BorrowRoute
   '/dashboard': typeof DashboardRoute
   '/my-reservations': typeof MyReservationsRoute
+  '/notifications': typeof NotificationsRoute
   '/reservations': typeof ReservationsRoute
   '/resources': typeof ResourcesRoute
   '/students': typeof StudentsRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/borrow'
     | '/dashboard'
     | '/my-reservations'
+    | '/notifications'
     | '/reservations'
     | '/resources'
     | '/students'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/borrow'
     | '/dashboard'
     | '/my-reservations'
+    | '/notifications'
     | '/reservations'
     | '/resources'
     | '/students'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/borrow'
     | '/dashboard'
     | '/my-reservations'
+    | '/notifications'
     | '/reservations'
     | '/resources'
     | '/students'
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   BorrowRoute: typeof BorrowRoute
   DashboardRoute: typeof DashboardRoute
   MyReservationsRoute: typeof MyReservationsRoute
+  NotificationsRoute: typeof NotificationsRoute
   ReservationsRoute: typeof ReservationsRoute
   ResourcesRoute: typeof ResourcesRoute
   StudentsRoute: typeof StudentsRoute
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/reservations'
       fullPath: '/reservations'
       preLoaderRoute: typeof ReservationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/my-reservations': {
@@ -340,6 +360,7 @@ const rootRouteChildren: RootRouteChildren = {
   BorrowRoute: BorrowRoute,
   DashboardRoute: DashboardRoute,
   MyReservationsRoute: MyReservationsRoute,
+  NotificationsRoute: NotificationsRoute,
   ReservationsRoute: ReservationsRoute,
   ResourcesRoute: ResourcesRoute,
   StudentsRoute: StudentsRoute,

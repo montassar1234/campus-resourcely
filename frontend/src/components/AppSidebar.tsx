@@ -8,6 +8,7 @@ import {
   GraduationCap,
   PackageSearch,
   ClipboardList,
+  Bell,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,9 +25,9 @@ import {
 import { useAuth } from "@/lib/auth";
 
 const studentItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Borrow Equipment", url: "/borrow", icon: PackageSearch },
   { title: "My Reservations", url: "/my-reservations", icon: ClipboardList },
+  { title: "Notifications", url: "/notifications", icon: Bell },
 ];
 
 const adminItems = [
@@ -41,6 +42,7 @@ export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { student, admin } = useAuth();
   const isAdmin = pathname.startsWith("/admin");
+  const homeUrl = isAdmin ? "/admin/dashboard" : "/borrow";
 
   const primary = isAdmin ? adminItems : studentItems;
   const primaryLabel = isAdmin ? "Admin Workspace" : "Student Portal";
@@ -48,7 +50,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-2.5 px-2 py-3">
+        <Link to={homeUrl} className="flex items-center gap-2.5 px-2 py-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-soft">
             <GraduationCap className="h-5 w-5" />
           </div>

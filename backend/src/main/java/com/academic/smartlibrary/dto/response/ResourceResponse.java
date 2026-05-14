@@ -8,6 +8,6 @@ public record ResourceResponse(
         String type,
         String assetCode,
         Integer quantity,
-        Set<String> tags
+        Set<ResourceTagResponse> tags
 ) {
 }

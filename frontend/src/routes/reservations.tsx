@@ -1,13 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, CalendarCheck, CornerDownLeft } from "lucide-react";
+import { Plus, Trash2, Search, CalendarCheck, CornerDownLeft, Send, CheckCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Reservation, ReservationStatus, Resource, Student } from "@/lib/types";
 import { PageShell } from "@/components/PageShell";
 import { EmptyState } from "@/components/EmptyState";
+import { SmartPagination } from "@/components/SmartPagination";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -23,15 +24,18 @@ export const Route = createFileRoute("/reservations")({
   component: () => null,
 });
 
-const STATUSES: (ReservationStatus | "ALL")[] = ["ALL", "ACTIVE", "RETURNED", "OVERDUE"];
+const STATUSES: (ReservationStatus | "ALL")[] = ["ALL", "PENDING", "REJECTED", "APPROVED", "ACTIVE", "RETURNED", "OVERDUE"];
+const PAGE_SIZE = 8;
 
 export function ReservationsPage() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "ALL">("ALL");
   const [studentFilter, setStudentFilter] = useState<string>("ALL");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
+  const [alerting, setAlerting] = useState<Reservation | null>(null);
 
   const { data: reservations, isLoading } = useQuery({
     queryKey: ["reservations", statusFilter],
@@ -56,11 +60,36 @@ export function ReservationsPage() {
     return list;
   }, [reservations, studentFilter, search]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedReservations = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, studentFilter, search]);
+
+  useEffect(() => {
+    setPage((currentPage) => Math.min(currentPage, totalPages));
+  }, [totalPages]);
+
   const returnMut = useMutation({
     mutationFn: (id: number) => api.reservations.markReturned(id),
     onSuccess: () => {
       toast.success("Marked as returned");
       qc.invalidateQueries({ queryKey: ["reservations"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const approveMut = useMutation({
+    mutationFn: (id: number) => api.reservations.approve(id),
+    onSuccess: () => {
+      toast.success("Reservation approved");
+      qc.invalidateQueries({ queryKey: ["reservations"] });
+      qc.invalidateQueries({ queryKey: ["resources"] });
+      qc.invalidateQueries({ queryKey: ["resources", "available"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -74,9 +103,19 @@ export function ReservationsPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+  const alertMut = useMutation({
+    mutationFn: ({ reservationId, message }: { reservationId: number; message?: string }) =>
+      api.notifications.sendReturnAlert(reservationId, { message }),
+    onSuccess: () => {
+      toast.success("Return alert sent to the student");
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      setAlerting(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   return (
-    <PageShell title="Reservations" subtitle="Track checkouts, returns and overdue items">
+    <PageShell title="Reservations" subtitle="Review requests, approve borrowing, and track returns">
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] max-w-sm flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -126,23 +165,32 @@ export function ReservationsPage() {
         <EmptyState icon={CalendarCheck} title="No reservations" description="Create one to start tracking equipment usage." />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-          <div className="hidden grid-cols-[2fr_1.5fr_1fr_1fr_1fr_auto] gap-4 border-b border-border bg-secondary/50 px-6 py-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:grid">
+          <div className="hidden grid-cols-[1.8fr_1.4fr_1fr_1fr_1fr_auto] gap-4 border-b border-border bg-secondary/50 px-6 py-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:grid">
             <div>Resource</div>
             <div>Student</div>
-            <div>Checkout</div>
-            <div>Expected</div>
+            <div>Start</div>
+            <div>End / Return</div>
             <div>Status</div>
             <div></div>
           </div>
           <div className="divide-y divide-border">
-            {filtered.map((reservation) => (
+            {paginatedReservations.map((reservation) => (
               <ReservationRow
                 key={reservation.id}
                 reservation={reservation}
+                onApprove={() => approveMut.mutate(reservation.id)}
                 onReturn={() => returnMut.mutate(reservation.id)}
                 onDelete={() => setConfirmId(reservation.id)}
+                onAlert={() => setAlerting(reservation)}
               />
             ))}
+          </div>
+          <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}-
+              {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} reservations
+            </p>
+            <SmartPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         </div>
       )}
@@ -162,37 +210,64 @@ export function ReservationsPage() {
           setConfirmId(null);
         }}
       />
+      <AdminAlertDialog
+        open={alerting !== null}
+        onOpenChange={(open) => !open && setAlerting(null)}
+        reservation={alerting}
+        onSubmit={(message) => {
+          if (!alerting) return;
+          alertMut.mutate({ reservationId: alerting.id, message });
+        }}
+        isSubmitting={alertMut.isPending}
+      />
     </PageShell>
   );
 }
 
 function ReservationRow({
   reservation,
+  onApprove,
   onReturn,
   onDelete,
+  onAlert,
 }: {
   reservation: Reservation;
+  onApprove: () => void;
   onReturn: () => void;
   onDelete: () => void;
+  onAlert: () => void;
 }) {
   return (
-    <div className="grid grid-cols-1 items-center gap-3 px-6 py-4 md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr_auto] md:gap-4">
+    <div className="grid grid-cols-1 items-center gap-3 px-6 py-4 md:grid-cols-[1.8fr_1.4fr_1fr_1fr_1fr_auto] md:gap-4">
       <div>
         <div className="font-medium">{reservation.resourceName}</div>
         <div className="text-[11px] text-muted-foreground md:hidden">{reservation.studentName}</div>
       </div>
       <div className="hidden text-sm md:block">{reservation.studentName}</div>
       <div className="hidden text-xs text-muted-foreground md:block">
-        {new Date(reservation.checkoutDate).toLocaleDateString()}
+        {new Date(reservation.startDate).toLocaleDateString()}
       </div>
       <div className="hidden text-xs text-muted-foreground md:block">
-        {new Date(reservation.expectedReturnDate).toLocaleDateString()}
+        {new Date(reservation.expectedReturnDate ?? reservation.endDate).toLocaleDateString()}
       </div>
       <div>
         <StatusBadge status={reservation.status} />
       </div>
       <div className="flex justify-end gap-1.5">
-        {reservation.status !== "RETURNED" && (
+        {reservation.status === "PENDING" && (
+          <Button size="sm" variant="ghost" onClick={onApprove} className="gap-1.5 text-primary hover:text-primary">
+            <CheckCheck className="h-3.5 w-3.5" /> Approve
+          </Button>
+        )}
+        {reservation.status === "OVERDUE" && (
+          <Button size="sm" variant="ghost" onClick={onAlert} className="gap-1.5 text-amber-700 hover:text-amber-700">
+            <Send className="h-3.5 w-3.5" /> Alert
+          </Button>
+        )}
+        {reservation.status !== "RETURNED"
+          && reservation.status !== "PENDING"
+          && reservation.status !== "APPROVED"
+          && reservation.status !== "REJECTED" && (
           <Button size="sm" variant="ghost" onClick={onReturn} className="gap-1.5">
             <CornerDownLeft className="h-3.5 w-3.5" /> Return
           </Button>
@@ -205,7 +280,8 @@ function ReservationRow({
   );
 }
 
-type NewValues = { studentId: string; resourceId: string; purpose: string };
+type NewValues = { studentId: string; resourceId: string; startDate: string; durationDays: string; purpose: string };
+type AlertValues = { message: string };
 
 function NewReservationDialog({
   open,
@@ -225,7 +301,13 @@ function NewReservationDialog({
     reset,
     formState: { errors },
   } = useForm<NewValues>({
-    defaultValues: { studentId: "", resourceId: "", purpose: "" },
+    defaultValues: {
+      studentId: "",
+      resourceId: "",
+      startDate: new Date().toISOString().slice(0, 10),
+      durationDays: "7",
+      purpose: "",
+    },
   });
 
   const mut = useMutation({
@@ -233,6 +315,8 @@ function NewReservationDialog({
       api.reservations.create({
         studentId: Number(values.studentId),
         resourceId: Number(values.resourceId),
+        startDate: values.startDate,
+        durationDays: Number(values.durationDays),
         purpose: values.purpose,
       }),
     onSuccess: () => {
@@ -280,12 +364,94 @@ function NewReservationDialog({
             <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Purpose</Label>
             <Input placeholder="Optional staff note" {...register("purpose")} />
           </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Start date</Label>
+            <Input type="date" {...register("startDate", { required: "Required" })} />
+            {errors.startDate && <p className="text-xs text-destructive">{errors.startDate.message}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Duration (calendar days)</Label>
+            <Input
+              type="number"
+              min={1}
+              max={31}
+              {...register("durationDays", {
+                required: "Required",
+                validate: (value) => {
+                  const number = Number(value);
+                  if (Number.isNaN(number) || number < 1) return "Minimum 1 day";
+                  if (number > 31) return "Maximum 31 days";
+                  return true;
+                },
+              })}
+            />
+            {errors.durationDays && <p className="text-xs text-destructive">{errors.durationDays.message}</p>}
+          </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={mut.isPending}>
               {mut.isPending ? "Creating..." : "Create"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AdminAlertDialog({
+  open,
+  onOpenChange,
+  reservation,
+  onSubmit,
+  isSubmitting,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  reservation: Reservation | null;
+  onSubmit: (message: string) => void;
+  isSubmitting: boolean;
+}) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+  } = useForm<AlertValues>({
+    values: {
+      message:
+        reservation?.resourceName
+          ? `Please return ${reservation.resourceName} as soon as possible because the borrowing deadline has passed.`
+          : "",
+    },
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) reset({ message: "" });
+        onOpenChange(nextOpen);
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="font-display">Send return alert</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit((values) => onSubmit(values.message))} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Alert message
+            </Label>
+            <Input {...register("message")} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Sending..." : "Send alert"}
             </Button>
           </DialogFooter>
         </form>

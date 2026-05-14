@@ -269,14 +269,25 @@ function StudentFormDialog({
             <Field label="Full name" error={errors.fullName?.message}>
               <Input {...register("fullName", { required: "Required" })} />
             </Field>
-            <Field label="Phone">
-              <Input {...register("phone")} />
+            <Field label="Phone" error={errors.phone?.message}>
+              <Input
+                {...register("phone", {
+                  required: "Required",
+                  minLength: { value: 8, message: "Min 8 characters" },
+                })}
+              />
             </Field>
-            <Field label="Department">
-              <Input {...register("department")} placeholder="e.g. Computer Science" />
+            <Field label="Department" error={errors.department?.message}>
+              <Input
+                {...register("department", { required: "Required" })}
+                placeholder="e.g. Computer Science"
+              />
             </Field>
-            <Field label="Level">
-              <Input {...register("level")} placeholder="e.g. L3, M1" />
+            <Field label="Level" error={errors.level?.message}>
+              <Input
+                {...register("level", { required: "Required" })}
+                placeholder="e.g. L3, M1"
+              />
             </Field>
           </div>
           <DialogFooter>

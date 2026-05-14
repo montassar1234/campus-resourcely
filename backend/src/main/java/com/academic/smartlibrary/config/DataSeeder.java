@@ -144,8 +144,10 @@ public class DataSeeder {
             Reservation activeReservation = Reservation.builder()
                     .student(aminah)
                     .resource(arduinoBox)
+                    .startDate(LocalDate.now().minusDays(2))
+                    .durationDays(4)
                     .checkoutDate(LocalDate.now().minusDays(2))
-                    .expectedReturnDate(LocalDate.now().plusDays(5))
+                    .expectedReturnDate(LocalDate.now().plusDays(2))
                     .purpose("Senior project prototyping session")
                     .status(ReservationStatus.ACTIVE)
                     .build();
@@ -153,13 +155,24 @@ public class DataSeeder {
             Reservation overdueReservation = Reservation.builder()
                     .student(david)
                     .resource(projector)
+                    .startDate(LocalDate.now().minusDays(10))
+                    .durationDays(8)
                     .checkoutDate(LocalDate.now().minusDays(10))
                     .expectedReturnDate(LocalDate.now().minusDays(2))
                     .purpose("Class presentation rehearsal")
                     .status(ReservationStatus.OVERDUE)
                     .build();
 
-            reservationRepository.saveAll(List.of(activeReservation, overdueReservation));
+            Reservation pendingReservation = Reservation.builder()
+                    .student(yassine)
+                    .resource(cameraKit)
+                    .startDate(LocalDate.now().plusDays(4))
+                    .durationDays(5)
+                    .purpose("Media club interview recording")
+                    .status(ReservationStatus.PENDING)
+                    .build();
+
+            reservationRepository.saveAll(List.of(activeReservation, overdueReservation, pendingReservation));
         };
     }
 }
