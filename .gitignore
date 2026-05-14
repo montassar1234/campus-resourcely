@@ -30,3 +30,7 @@ backend/.mvn/wrapper/maven-wrapper.jar
 *.njsproj
 *.sln
 *.sw?
+
+# Presentation workspace artifacts
+docs/presentation-workspace/output/
+docs/presentation-workspace/scratch/
