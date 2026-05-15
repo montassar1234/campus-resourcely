@@ -224,7 +224,9 @@ export function ReservationRequestDialog({
     }
 
     if (weekdayDurationDays > 7) {
-      setRangeError("Student reservations cannot exceed 7 weekdays (Saturday and Sunday are not counted).");
+      setRangeError(
+        "Student reservations cannot exceed 7 weekdays (Saturday and Sunday are not counted).",
+      );
       return;
     }
 
@@ -279,7 +281,9 @@ export function ReservationRequestDialog({
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div className="max-w-2xl">
                   <DialogTitle className="font-display text-2xl leading-tight text-foreground sm:text-3xl">
-                    {resource ? `Choose dates for ${resource.name}` : "Choose your reservation dates"}
+                    {resource
+                      ? `Choose dates for ${resource.name}`
+                      : "Choose your reservation dates"}
                   </DialogTitle>
                   <DialogDescription className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
                     Pick your start and end dates from the equipment calendar. Requests must start
@@ -300,7 +304,9 @@ export function ReservationRequestDialog({
                         {resource ? resource.name : "Selected resource"}
                       </div>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {resource ? `${resource.assetCode} - ${resource.type}` : "Open a resource first"}
+                        {resource
+                          ? `${resource.assetCode} - ${resource.type}`
+                          : "Open a resource first"}
                       </p>
                     </div>
                     <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
@@ -357,7 +363,9 @@ export function ReservationRequestDialog({
               <InfoCard
                 icon={<CalendarClock className="h-3.5 w-3.5" />}
                 label="Start date"
-                value={selectedRange?.from ? format(selectedRange.from, "PPP") : "Choose from calendar"}
+                value={
+                  selectedRange?.from ? format(selectedRange.from, "PPP") : "Choose from calendar"
+                }
               />
               <InfoCard
                 icon={<CalendarRange className="h-3.5 w-3.5" />}

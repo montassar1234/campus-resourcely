@@ -12,7 +12,13 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/resources")({
   beforeLoad: () => {
@@ -118,11 +124,18 @@ export function ResourcesPage() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-44 animate-pulse rounded-2xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-44 animate-pulse rounded-2xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState icon={Boxes} title="No resources match" description="Try a different search or clear filters." />
+        <EmptyState
+          icon={Boxes}
+          title="No resources match"
+          description="Try a different search or clear filters."
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((resource) => (
@@ -138,9 +151,13 @@ export function ResourcesPage() {
                   {resource.quantity} units
                 </span>
               </div>
-              <h3 className="mt-4 font-display text-lg font-semibold leading-tight">{resource.name}</h3>
+              <h3 className="mt-4 font-display text-lg font-semibold leading-tight">
+                {resource.name}
+              </h3>
               <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="rounded bg-secondary px-1.5 py-0.5 font-mono">{resource.assetCode}</span>
+                <span className="rounded bg-secondary px-1.5 py-0.5 font-mono">
+                  {resource.assetCode}
+                </span>
                 <span>·</span>
                 <span>{resource.type}</span>
               </div>
@@ -256,7 +273,9 @@ function ResourceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">{editing ? "Edit resource" : "New resource"}</DialogTitle>
+          <DialogTitle className="font-display">
+            {editing ? "Edit resource" : "New resource"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit((values) => mut.mutate(values))} className="space-y-4">
           <Field label="Name" error={errors.name?.message}>
@@ -273,7 +292,10 @@ function ResourceDialog({
               <Input
                 type="number"
                 min={1}
-                {...register("quantity", { required: "Required", min: { value: 1, message: "Min 1" } })}
+                {...register("quantity", {
+                  required: "Required",
+                  min: { value: 1, message: "Min 1" },
+                })}
               />
             </Field>
           </div>
@@ -282,13 +304,14 @@ function ResourceDialog({
               control={control}
               name="tagIds"
               rules={{
-                validate: (value) =>
-                  value.length > 0 || "Select at least one tag",
+                validate: (value) => value.length > 0 || "Select at least one tag",
               }}
               render={({ field }) => (
                 <div className="flex flex-wrap gap-1.5">
                   {tags.length === 0 && (
-                    <span className="text-xs text-muted-foreground">No tags available - create one first.</span>
+                    <span className="text-xs text-muted-foreground">
+                      No tags available - create one first.
+                    </span>
                   )}
                   {tags.map((tag) => {
                     const active = field.value.includes(tag.id);
@@ -298,7 +321,9 @@ function ResourceDialog({
                         key={tag.id}
                         onClick={() =>
                           field.onChange(
-                            active ? field.value.filter((value) => value !== tag.id) : [...field.value, tag.id],
+                            active
+                              ? field.value.filter((value) => value !== tag.id)
+                              : [...field.value, tag.id],
                           )
                         }
                         className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
@@ -340,7 +365,9 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

@@ -37,7 +37,7 @@ flowchart LR
     A["Student / Admin UI<br/>React Frontend"] --> B["REST API<br/>Spring Boot Controllers"]
     B --> C["Service Layer<br/>Business Rules"]
     C --> D["Repository Layer<br/>Spring Data JPA"]
-    D --> E["H2 Database"]
+    D --> E["XAMPP MySQL Database"]
     C --> F["Scheduler / Notifications"]
 ```
 
@@ -95,7 +95,7 @@ Important note: the current frontend in this repository is **React**, while the 
 
 The backend starts from:
 
-- [CampusResourceHubBackendApplication.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\CampusResourceHubBackendApplication.java)
+- [CampusResourceHubBackendApplication.java](backend\src\main\java\com\academic\smartlibrary\CampusResourceHubBackendApplication.java)
 
 It uses:
 
@@ -107,27 +107,29 @@ It uses:
 
 Main runtime configuration:
 
-- [application.properties](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\resources\application.properties)
-- [AppProperties.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\config\AppProperties.java)
-- [CorsConfig.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\config\CorsConfig.java)
+- [application.properties](backend\src\main\resources\application.properties)
+- [AppProperties.java](backend\src\main\java\com\academic\smartlibrary\config\AppProperties.java)
+- [CorsConfig.java](backend\src\main\java\com\academic\smartlibrary\config\CorsConfig.java)
+- [SecurityConfig.java](backend\src\main\java\com\academic\smartlibrary\config\SecurityConfig.java)
 
 Key choices:
 
-- H2 in-memory database for academic/demo simplicity
-- `create-drop` schema lifecycle
+- XAMPP MySQL database for persistent local data
+- `update` schema lifecycle so Hibernate keeps existing demo changes
 - local CORS allowed for ports `3000` and `4200`
 - configurable default borrow duration through `app.borrow-days`
+- stateless JWT authentication with role-based access control for admin and student routes
 
 ### 3. Domain Model
 
 Main entities:
 
-- [Student.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\entity\Student.java)
-- [StudentProfile.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\entity\StudentProfile.java)
-- [Resource.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\entity\Resource.java)
-- [ResourceTag.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\entity\ResourceTag.java)
-- [Reservation.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\entity\Reservation.java)
-- [Notification.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\entity\Notification.java)
+- [Student.java](backend\src\main\java\com\academic\smartlibrary\entity\Student.java)
+- [StudentProfile.java](backend\src\main\java\com\academic\smartlibrary\entity\StudentProfile.java)
+- [Resource.java](backend\src\main\java\com\academic\smartlibrary\entity\Resource.java)
+- [ResourceTag.java](backend\src\main\java\com\academic\smartlibrary\entity\ResourceTag.java)
+- [Reservation.java](backend\src\main\java\com\academic\smartlibrary\entity\Reservation.java)
+- [Notification.java](backend\src\main\java\com\academic\smartlibrary\entity\Notification.java)
 
 Relationships:
 
@@ -142,10 +144,10 @@ Relationships:
 
 The backend does not expose entities directly. It uses request/response DTOs such as:
 
-- [StudentRequest.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\dto\request\StudentRequest.java)
-- [StudentReservationRequest.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\dto\request\StudentReservationRequest.java)
-- [ReservationRequest.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\dto\request\ReservationRequest.java)
-- [ReservationResponse.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\dto\response\ReservationResponse.java)
+- [StudentRequest.java](backend\src\main\java\com\academic\smartlibrary\dto\request\StudentRequest.java)
+- [StudentReservationRequest.java](backend\src\main\java\com\academic\smartlibrary\dto\request\StudentReservationRequest.java)
+- [ReservationRequest.java](backend\src\main\java\com\academic\smartlibrary\dto\request\ReservationRequest.java)
+- [ReservationResponse.java](backend\src\main\java\com\academic\smartlibrary\dto\response\ReservationResponse.java)
 
 Why this matters:
 
@@ -174,11 +176,11 @@ This is where Spring Data generates query methods such as:
 
 The service layer contains the real business rules:
 
-- [StudentService.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\service\StudentService.java)
-- [ResourceService.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\service\ResourceService.java)
-- [ReservationService.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\service\ReservationService.java)
-- [NotificationService.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\service\NotificationService.java)
-- [DashboardService.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\service\DashboardService.java)
+- [StudentService.java](backend\src\main\java\com\academic\smartlibrary\service\StudentService.java)
+- [ResourceService.java](backend\src\main\java\com\academic\smartlibrary\service\ResourceService.java)
+- [ReservationService.java](backend\src\main\java\com\academic\smartlibrary\service\ReservationService.java)
+- [NotificationService.java](backend\src\main\java\com\academic\smartlibrary\service\NotificationService.java)
+- [DashboardService.java](backend\src\main\java\com\academic\smartlibrary\service\DashboardService.java)
 
 Important business rules implemented there:
 
@@ -194,12 +196,13 @@ Important business rules implemented there:
 
 REST endpoints are exposed through:
 
-- [StudentController.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\controller\StudentController.java)
-- [ResourceController.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\controller\ResourceController.java)
-- [ResourceTagController.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\controller\ResourceTagController.java)
-- [ReservationController.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\controller\ReservationController.java)
-- [DashboardController.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\controller\DashboardController.java)
-- [NotificationController.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\controller\NotificationController.java)
+- [AuthController.java](backend\src\main\java\com\academic\smartlibrary\controller\AuthController.java)
+- [StudentController.java](backend\src\main\java\com\academic\smartlibrary\controller\StudentController.java)
+- [ResourceController.java](backend\src\main\java\com\academic\smartlibrary\controller\ResourceController.java)
+- [ResourceTagController.java](backend\src\main\java\com\academic\smartlibrary\controller\ResourceTagController.java)
+- [ReservationController.java](backend\src\main\java\com\academic\smartlibrary\controller\ReservationController.java)
+- [DashboardController.java](backend\src\main\java\com\academic\smartlibrary\controller\DashboardController.java)
+- [NotificationController.java](backend\src\main\java\com\academic\smartlibrary\controller\NotificationController.java)
 
 The controller layer stays thin: it receives HTTP input, validates it, delegates to services, and returns `ResponseEntity`.
 
@@ -207,7 +210,7 @@ The controller layer stays thin: it receives HTTP input, validates it, delegates
 
 Centralized exception handling lives in:
 
-- [GlobalExceptionHandler.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\exception\GlobalExceptionHandler.java)
+- [GlobalExceptionHandler.java](backend\src\main\java\com\academic\smartlibrary\exception\GlobalExceptionHandler.java)
 
 Handled exception categories:
 
@@ -224,7 +227,7 @@ This is the most important business flow in the project.
 ### Student request
 
 1. Student chooses equipment and a calendar range in the frontend.
-2. Frontend sends `POST /api/reservations/request`.
+2. Frontend sends `POST /api/reservations/request/student` with the student's JWT.
 3. Backend validates dates, weekday rules, and resource availability.
 4. A reservation is created with status `PENDING`.
 
@@ -256,7 +259,7 @@ Whenever reservation data is fetched, the service refreshes statuses:
 
 The notification feature is implemented in:
 
-- [NotificationService.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\service\NotificationService.java)
+- [NotificationService.java](backend\src\main\java\com\academic\smartlibrary\service\NotificationService.java)
 
 Supported use cases:
 
@@ -274,7 +277,7 @@ Spring Boot concepts used:
 
 The demo data is created in:
 
-- [DataSeeder.java](C:\Users\a\Desktop\spring bot\campus-resourcely\backend\src\main\java\com\academic\smartlibrary\config\DataSeeder.java)
+- [DataSeeder.java](backend\src\main\java\com\academic\smartlibrary\config\DataSeeder.java)
 
 It seeds:
 
@@ -306,12 +309,14 @@ This makes the app ready to present immediately after startup.
 ## Main API Areas
 
 - `GET /api/dashboard/summary`
-- `POST /api/students/login`
+- `POST /api/auth/student/login`
+- `POST /api/auth/admin/login`
 - `GET /api/students`
 - `GET /api/resources`
 - `GET /api/resources/available`
 - `POST /api/reservations`
 - `POST /api/reservations/request`
+- `POST /api/reservations/request/student`
 - `PUT /api/reservations/{id}/approve`
 - `PUT /api/reservations/{id}/return`
 - `GET /api/notifications/student/{studentId}`
@@ -328,7 +333,25 @@ cmd /c mvnw.cmd spring-boot:run
 Backend URLs:
 
 - API: `http://localhost:8080/api`
-- H2 console: `http://localhost:8080/h2-console`
+- Database UI: `http://localhost/phpmyadmin`
+
+### XAMPP MySQL Database
+
+The backend uses XAMPP MySQL by default.
+
+1. Start XAMPP and turn on MySQL.
+2. Open phpMyAdmin and run `backend/database/xampp-mysql.sql`, or create a database named
+   `campus_resourcely`.
+3. Start the backend:
+
+```powershell
+cd backend
+cmd /c mvnw.cmd spring-boot:run
+```
+
+The backend connects to `localhost:3306` with XAMPP's default `root` user and empty password.
+Hibernate creates or updates the tables from the JPA entities, and `DataSeeder` inserts the demo data
+when the database is empty. The data stays in MySQL after backend restarts.
 
 ### Frontend
 
@@ -367,16 +390,16 @@ Short version:
 
 ## Current Limits
 
-- Admin authentication is still demo-style frontend authentication, not Spring Security or JWT
-- Database is H2 in-memory for classroom/demo simplicity
+- Authentication is implemented in the Spring Boot backend with JWT tokens and role-based access control.
+- Database is local XAMPP MySQL for persistent demo data
 - Passwords are stored plainly for academic/demo scope, not production security
 - Frontend is React in this repository, not Angular
 
 ## Suggested Next Improvements
 
-- Replace demo admin auth with backend authentication
-- Add Spring Security and JWT
-- Migrate from H2 to PostgreSQL
+- Hash passwords with BCrypt before production use.
+- Add migration scripts with Flyway or Liquibase
 - Add Docker and deployment
 - Add file upload for resource images
 - Add audit logs for approval and return actions
+

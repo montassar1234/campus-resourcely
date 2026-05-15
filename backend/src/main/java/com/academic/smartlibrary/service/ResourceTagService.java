@@ -61,7 +61,7 @@ public class ResourceTagService {
     }
 
     private ResourceTagResponse toResponse(ResourceTag tag) {
-        int resourceCount = tag.getResources() == null ? 0 : tag.getResources().size();
+        int resourceCount = resourceTagRepository.countResourcesByTagId(tag.getId());
         return new ResourceTagResponse(tag.getId(), tag.getName(), resourceCount);
     }
 }

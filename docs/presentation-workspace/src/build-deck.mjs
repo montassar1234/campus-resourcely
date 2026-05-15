@@ -294,10 +294,10 @@ const presentation = Presentation.create({ slideSize: SLIDE });
             infoCard("arch-backend", "Spring Boot API", [
               "Controllers expose JSON",
               "Services hold business rules",
-              "Repositories use JPA and H2",
+              "Repositories use JPA and MySQL",
             ], { fillColor: palette.mist }),
             infoCard("arch-db", "Persistence and automation", [
-              "H2 in-memory database",
+              "XAMPP MySQL database",
               "Seed data at startup",
               "Scheduled return reminders",
             ], { fillColor: "#F7FBF8" }),
@@ -643,7 +643,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           "DataSeeder.java: prepares demo students, resources, and reservations.",
           "StudentReservationRequest.java and ReservationRequest.java: validation contracts.",
           "Reservation.java, Student.java, Resource.java: JPA entities and relationships.",
-          "application.properties: ports, H2, JPA, active profile, and custom app properties.",
+          "application.properties: ports, MySQL, JPA, and custom app properties.",
         ], false, "files-right"),
       ],
     ),
@@ -685,9 +685,9 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           "Why DTOs? To validate input and avoid exposing entities directly.",
         ]),
         infoCard("qa-right", "Honest project limits", [
-          "Admin authentication is still demo-style on the frontend, not Spring Security.",
-          "H2 is in-memory for presentation simplicity.",
+          "The database is local XAMPP MySQL, so the demo depends on MySQL being started.",
           "Passwords are plain for demo scope, not production security.",
+          "Authentication uses JWT and role-based access control in the Spring Boot backend.",
           "Frontend is React in this repository, while Spring Boot remains the academic focus.",
         ], { fillColor: palette.paper }),
       ],

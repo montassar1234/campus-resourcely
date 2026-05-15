@@ -1,11 +1,13 @@
 package com.academic.smartlibrary.config;
 
+import com.academic.smartlibrary.entity.AdminAccount;
 import com.academic.smartlibrary.entity.Reservation;
 import com.academic.smartlibrary.entity.ReservationStatus;
 import com.academic.smartlibrary.entity.Resource;
 import com.academic.smartlibrary.entity.ResourceTag;
 import com.academic.smartlibrary.entity.Student;
 import com.academic.smartlibrary.entity.StudentProfile;
+import com.academic.smartlibrary.repository.AdminAccountRepository;
 import com.academic.smartlibrary.repository.ReservationRepository;
 import com.academic.smartlibrary.repository.ResourceRepository;
 import com.academic.smartlibrary.repository.ResourceTagRepository;
@@ -23,11 +25,29 @@ public class DataSeeder {
     @Bean
     CommandLineRunner seedDatabase(
             StudentRepository studentRepository,
+            AdminAccountRepository adminAccountRepository,
             ResourceTagRepository resourceTagRepository,
             ResourceRepository resourceRepository,
             ReservationRepository reservationRepository
     ) {
         return args -> {
+            // Keep demo logins available even if the inventory data was already inserted earlier.
+            if (adminAccountRepository.count() == 0) {
+                adminAccountRepository.saveAll(List.of(
+                    AdminAccount.builder()
+                            .username("admin")
+                            .password("admin123")
+                            .displayName("Admin Staff")
+                            .build(),
+                    AdminAccount.builder()
+                            .username("test")
+                            .password("test")
+                            .displayName("Test Admin")
+                            .build()
+                ));
+            }
+
+            // The rest of the seed data is inserted only once so XAMPP keeps later demo changes.
             if (studentRepository.count() > 0 || resourceTagRepository.count() > 0 || resourceRepository.count() > 0) {
                 return;
             }

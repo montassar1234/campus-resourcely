@@ -1,9 +1,7 @@
 package com.academic.smartlibrary.controller;
 
-import com.academic.smartlibrary.dto.request.StudentLoginRequest;
 import com.academic.smartlibrary.dto.request.StudentRequest;
 import com.academic.smartlibrary.dto.response.ApiMessageResponse;
-import com.academic.smartlibrary.dto.response.StudentAuthResponse;
 import com.academic.smartlibrary.dto.response.StudentResponse;
 import com.academic.smartlibrary.service.StudentService;
 import jakarta.validation.Valid;
@@ -48,11 +46,6 @@ public class StudentController {
     @GetMapping("/message")
     public ResponseEntity<ApiMessageResponse> getMessage() {
         return ResponseEntity.ok(studentService.getMessage());
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<StudentAuthResponse> loginStudent(@Valid @RequestBody StudentLoginRequest request) {
-        return ResponseEntity.ok(studentService.login(request));
     }
 
     @PostMapping

@@ -44,15 +44,7 @@ export function NotificationsPanel({
     },
   });
 
-  if (!student) {
-    return (
-      <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-        Notifications are available after signing in as a student.
-      </div>
-    );
-  }
-
-  const notifications = notificationsQuery.data ?? [];
+  const notifications = useMemo(() => notificationsQuery.data ?? [], [notificationsQuery.data]);
   const unreadCount = notifications.filter((notification) => !notification.read).length;
   const totalPages = Math.max(1, Math.ceil(notifications.length / PAGE_SIZE));
 
@@ -75,6 +67,14 @@ export function NotificationsPanel({
 
   const firstItemIndex = notifications.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const lastItemIndex = compact ? items.length : Math.min(page * PAGE_SIZE, notifications.length);
+
+  if (!student) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+        Notifications are available after signing in as a student.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -104,20 +104,22 @@ export function NotificationsPanel({
       {notificationsQuery.isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: compact ? 3 : 5 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-20 animate-pulse rounded-xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : notifications.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-          No notifications yet. Reminders will appear automatically when a return deadline gets close.
+          No notifications yet. Reminders will appear automatically when a return deadline gets
+          close.
         </div>
       ) : (
         <div className="space-y-4">
           <div
             className={`space-y-3 pr-2 ${
-              compact
-                ? "max-h-[260px] overflow-y-scroll"
-                : "max-h-[520px] overflow-y-auto"
+              compact ? "max-h-[260px] overflow-y-scroll" : "max-h-[520px] overflow-y-auto"
             }`}
           >
             {items.map((notification) => (
@@ -183,7 +185,9 @@ function NotificationCard({
             )}
             {notification.type === "ADMIN_RETURN_ALERT" ? "Admin alert" : "Auto reminder"}
           </div>
-          <div className="mt-2 text-sm font-medium text-foreground">{notification.resourceName}</div>
+          <div className="mt-2 text-sm font-medium text-foreground">
+            {notification.resourceName}
+          </div>
           <p className={`mt-1 text-sm text-muted-foreground ${compact ? "line-clamp-2" : ""}`}>
             {notification.message}
           </p>

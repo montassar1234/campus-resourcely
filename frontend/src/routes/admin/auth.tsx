@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +12,6 @@ type AdminLoginValues = {
   username: string;
   password: string;
 };
-
-const ADMIN_CREDENTIALS = [
-  { username: "admin", password: "admin123" },
-  { username: "test", password: "test" },
-];
 
 export const Route = createFileRoute("/admin/auth")({
   component: AdminAuthPage,
@@ -63,50 +59,67 @@ function AdminAuthPage() {
           </p>
 
           <div className="mt-4 rounded-2xl border border-dashed border-border bg-secondary/40 p-4 text-xs text-muted-foreground">
-            Demo credentials: <span className="font-medium text-foreground">admin</span> / <span className="font-medium text-foreground">admin123</span> or <span className="font-medium text-foreground">test</span> / <span className="font-medium text-foreground">test</span>
+            Demo credentials: <span className="font-medium text-foreground">admin</span> /{" "}
+            <span className="font-medium text-foreground">admin123</span> or{" "}
+            <span className="font-medium text-foreground">test</span> /{" "}
+            <span className="font-medium text-foreground">test</span>
           </div>
 
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <Label
+                htmlFor="admin-username"
+                className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              >
                 Username
               </Label>
-              <Input {...register("username", { required: "Username is required" })} />
-              {errors.username && <p className="text-xs text-destructive">{errors.username.message}</p>}
+              <Input
+                id="admin-username"
+                {...register("username", { required: "Username is required" })}
+              />
+              {errors.username && (
+                <p className="text-xs text-destructive">{errors.username.message}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <Label
+                htmlFor="admin-password"
+                className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              >
                 Password
               </Label>
               <div className="relative">
                 <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="admin-password"
                   type="password"
                   className="pl-9"
                   {...register("password", { required: "Password is required" })}
                 />
               </div>
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-xs text-destructive">{errors.password.message}</p>
+              )}
             </div>
 
             <Button
               type="button"
               className="w-full"
-              onClick={handleSubmit((values) => {
+              onClick={handleSubmit(async (values) => {
                 const username = values.username.trim();
                 const password = values.password.trim();
-                const validCredential = ADMIN_CREDENTIALS.find(
-                  (credential) =>
-                    credential.username === username && credential.password === password,
-                );
-
-                if (!validCredential) {
+                try {
+                  const auth = await api.auth.adminLogin({ username, password });
+                  loginAdmin({
+                    username: auth.user.username,
+                    displayName: auth.user.displayName,
+                    token: auth.token,
+                  });
+                  navigate({ to: "/admin/dashboard" });
+                } catch {
                   setError("password", { message: "Invalid admin credentials" });
-                  return;
                 }
-                loginAdmin({ username });
-                navigate({ to: "/admin/dashboard" });
               })}
             >
               Enter admin dashboard

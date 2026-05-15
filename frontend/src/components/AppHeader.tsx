@@ -15,7 +15,9 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
   const navigate = useNavigate();
   const { student, admin, logoutStudent, logoutAdmin } = useAuth();
   const isAdmin = pathname.startsWith("/admin");
-  const name = isAdmin ? admin?.username || "Admin" : student?.fullName || "Student";
+  const name = isAdmin
+    ? admin?.displayName || admin?.username || "Admin"
+    : student?.fullName || "Student";
   const initials = name
     .split(" ")
     .map((part) => part[0])
@@ -31,7 +33,9 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
   });
-  const unreadCount = (notificationsQuery.data ?? []).filter((notification) => !notification.read).length;
+  const unreadCount = (notificationsQuery.data ?? []).filter(
+    (notification) => !notification.read,
+  ).length;
 
   const handleLogout = () => {
     if (isAdmin) {
@@ -81,7 +85,13 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
             <div className="text-[10px] text-muted-foreground">{email}</div>
           </div>
         </div>
-        <Button type="button" variant="ghost" size="icon" onClick={handleLogout} aria-label="Sign out">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={handleLogout}
+          aria-label="Sign out"
+        >
           <LogOut className="h-4 w-4" />
         </Button>
       </div>

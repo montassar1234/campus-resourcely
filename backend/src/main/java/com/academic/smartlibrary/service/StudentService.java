@@ -1,11 +1,9 @@
 package com.academic.smartlibrary.service;
 
 import com.academic.smartlibrary.config.AppProperties;
-import com.academic.smartlibrary.dto.request.StudentLoginRequest;
 import com.academic.smartlibrary.dto.request.StudentReservationRequest;
 import com.academic.smartlibrary.dto.request.StudentRequest;
 import com.academic.smartlibrary.dto.response.ApiMessageResponse;
-import com.academic.smartlibrary.dto.response.StudentAuthResponse;
 import com.academic.smartlibrary.dto.response.StudentProfileResponse;
 import com.academic.smartlibrary.dto.response.StudentResponse;
 import com.academic.smartlibrary.entity.Student;
@@ -63,17 +61,6 @@ public class StudentService {
 
     public ApiMessageResponse getMessage() {
         return new ApiMessageResponse(appProperties.message());
-    }
-
-    public StudentAuthResponse login(StudentLoginRequest request) {
-        Student student = studentRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BusinessException("Invalid email or password"));
-
-        if (!student.getPassword().equals(request.password())) {
-            throw new BusinessException("Invalid email or password");
-        }
-
-        return toAuthResponse(student);
     }
 
     public Student createOrUpdateForReservation(StudentReservationRequest request) {
@@ -178,15 +165,6 @@ public class StudentService {
                 student.getUsername(),
                 student.getEmail(),
                 profileResponse
-        );
-    }
-
-    private StudentAuthResponse toAuthResponse(Student student) {
-        return new StudentAuthResponse(
-                student.getId(),
-                student.getUsername(),
-                student.getEmail(),
-                toProfileResponse(student.getProfile())
         );
     }
 

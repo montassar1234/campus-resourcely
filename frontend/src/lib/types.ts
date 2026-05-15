@@ -14,6 +14,22 @@ export interface Student {
   profile: Profile;
 }
 
+export type UserRole = "ADMIN" | "STUDENT";
+
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  profile: Profile | null;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
 export interface Tag {
   id: number;
   name: string;
@@ -29,7 +45,13 @@ export interface Resource {
   tags: Tag[];
 }
 
-export type ReservationStatus = "PENDING" | "REJECTED" | "APPROVED" | "ACTIVE" | "RETURNED" | "OVERDUE";
+export type ReservationStatus =
+  | "PENDING"
+  | "REJECTED"
+  | "APPROVED"
+  | "ACTIVE"
+  | "RETURNED"
+  | "OVERDUE";
 export type NotificationType = "AUTO_RETURN_REMINDER" | "ADMIN_RETURN_ALERT";
 
 export interface Reservation {

@@ -192,11 +192,11 @@ Use this answer:
 
 “Spring Data JPA reduces boilerplate for database access. I can define repositories as interfaces and let Spring generate common queries, while still keeping the code clean and readable.”
 
-## 14. Why H2?
+## 14. Why XAMPP MySQL?
 
 Use this answer:
 
-“H2 is used for academic/demo simplicity. It allows fast setup, no external installation, and immediate startup. In production I would replace it with PostgreSQL or MySQL.”
+“The project uses XAMPP MySQL so the data is persistent during the demo. Spring Data JPA and Hibernate create or update the tables from the entity model, and the repositories use the same code as they would with another SQL database.”
 
 ## 15. Why Is There A Data Seeder?
 
@@ -240,7 +240,7 @@ Answer:
 
 Answer:
 
-“The main limitations are that admin authentication is still demo-style, H2 is in-memory, and passwords are not secured with hashing because the project is aimed at academic demonstration rather than production deployment.”
+“The main limitation is that demo passwords are not hashed with BCrypt yet. Authentication itself is implemented in the backend with JWT and role-based access control.”
 
 ## 17. Best Final Summary
 

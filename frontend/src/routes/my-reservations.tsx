@@ -22,7 +22,11 @@ export const Route = createFileRoute("/my-reservations")({
 
 function MyReservationsPage() {
   const { student, ready } = useRequireStudent();
-  const { data: reservations, isLoading, isError } = useQuery({
+  const {
+    data: reservations,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["reservations", "student", student?.id],
     queryFn: () => api.reservations.byStudent(Number(student!.id)),
     enabled: !!student?.id,
@@ -56,7 +60,10 @@ function MyReservationsPage() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-2xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-2xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : isError ? (
@@ -173,12 +180,14 @@ function MyReservationsPage() {
 
                 {pending && (
                   <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
-                    This request is waiting for admin approval. Checkout and return dates will be confirmed once staff approve it.
+                    This request is waiting for admin approval. Checkout and return dates will be
+                    confirmed once staff approve it.
                   </div>
                 )}
                 {approved && (
                   <div className="mt-3 rounded-lg border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs text-sky-700">
-                    This request has been approved and scheduled. The equipment is reserved for your selected start date.
+                    This request has been approved and scheduled. The equipment is reserved for your
+                    selected start date.
                   </div>
                 )}
                 {overdue && (

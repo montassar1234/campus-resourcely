@@ -1,5 +1,11 @@
-import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+  HeadContent,
+  Scripts,
+} from "@tanstack/react-router";
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 
@@ -43,7 +49,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
           "A modern academic platform for booking, tracking, and managing shared campus equipment — cameras, Arduino kits, projectors, and lab devices.",
       },
       { property: "og:title", content: "Campus Resource Hub" },
-      { property: "og:description", content: "Reserve campus equipment, track returns, manage inventory." },
+      {
+        property: "og:description",
+        content: "Reserve campus equipment, track returns, manage inventory.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -78,6 +87,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

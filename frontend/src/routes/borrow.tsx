@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Search, Package, PackageSearch, Sparkles, ShieldCheck, Clock, CalendarRange } from "lucide-react";
+import {
+  Search,
+  Package,
+  PackageSearch,
+  Sparkles,
+  ShieldCheck,
+  Clock,
+  CalendarRange,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import { useRequireStudent } from "@/lib/auth";
 import type { Resource } from "@/lib/types";
@@ -17,7 +25,8 @@ export const Route = createFileRoute("/borrow")({
       { title: "Borrow Equipment - Campus Resource Hub" },
       {
         name: "description",
-        content: "Browse campus equipment and request a reservation from the availability calendar.",
+        content:
+          "Browse campus equipment and request a reservation from the availability calendar.",
       },
     ],
   }),
@@ -31,7 +40,12 @@ function BorrowPage() {
   const [selected, setSelected] = useState<Resource | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { data: resources, isLoading, isError, refetch } = useQuery({
+  const {
+    data: resources,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["resources"],
     queryFn: api.resources.list,
     enabled: ready && !!student,
@@ -56,7 +70,10 @@ function BorrowPage() {
   if (!ready || !student) return null;
 
   return (
-    <PageShell title="Borrow Equipment" subtitle="Choose the right item, then request dates from the booking calendar">
+    <PageShell
+      title="Borrow Equipment"
+      subtitle="Choose the right item, then request dates from the booking calendar"
+    >
       <section
         className="relative mb-8 overflow-hidden rounded-3xl border border-border p-6 text-primary-foreground md:p-10"
         style={{ background: "var(--gradient-hero)" }}
@@ -132,7 +149,10 @@ function BorrowPage() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-52 animate-pulse rounded-2xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-52 animate-pulse rounded-2xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : isError ? (

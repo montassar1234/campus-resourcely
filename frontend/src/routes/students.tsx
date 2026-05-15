@@ -22,7 +22,13 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/students")({
   beforeLoad: () => {
@@ -92,7 +98,10 @@ export function StudentsPage() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-40 animate-pulse rounded-2xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : (data ?? []).length === 0 ? (
@@ -145,7 +154,12 @@ export function StudentsPage() {
                 )}
               </div>
               <div className="mt-4 flex justify-end gap-1.5 border-t border-border pt-3">
-                <Button size="sm" variant="ghost" onClick={() => openEdit(student)} className="gap-1.5">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => openEdit(student)}
+                  className="gap-1.5"
+                >
                   <Pencil className="h-3.5 w-3.5" /> Edit
                 </Button>
                 <Button
@@ -242,7 +256,9 @@ function StudentFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">{editing ? "Edit student" : "New student"}</DialogTitle>
+          <DialogTitle className="font-display">
+            {editing ? "Edit student" : "New student"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit((values) => mut.mutate(values))} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -259,10 +275,18 @@ function StudentFormDialog({
               />
             </Field>
           </div>
-          <Field label={editing ? "New password (leave empty to keep)" : "Password"} error={errors.password?.message}>
+          <Field
+            label={editing ? "New password (leave empty to keep)" : "Password"}
+            error={errors.password?.message}
+          >
             <Input
               type="password"
-              {...register("password", editing ? {} : { required: "Required", minLength: { value: 6, message: "Min 6 chars" } })}
+              {...register(
+                "password",
+                editing
+                  ? {}
+                  : { required: "Required", minLength: { value: 6, message: "Min 6 chars" } },
+              )}
             />
           </Field>
           <div className="grid gap-4 md:grid-cols-2">
@@ -284,10 +308,7 @@ function StudentFormDialog({
               />
             </Field>
             <Field label="Level" error={errors.level?.message}>
-              <Input
-                {...register("level", { required: "Required" })}
-                placeholder="e.g. L3, M1"
-              />
+              <Input {...register("level", { required: "Required" })} placeholder="e.g. L3, M1" />
             </Field>
           </div>
           <DialogFooter>
@@ -315,7 +336,9 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

@@ -3,7 +3,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, CalendarCheck, CornerDownLeft, Send, CheckCheck } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Search,
+  CalendarCheck,
+  CornerDownLeft,
+  Send,
+  CheckCheck,
+} from "lucide-react";
 import { api } from "@/lib/api";
 import type { Reservation, ReservationStatus, Resource, Student } from "@/lib/types";
 import { PageShell } from "@/components/PageShell";
@@ -14,8 +22,20 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/reservations")({
   beforeLoad: () => {
@@ -24,7 +44,15 @@ export const Route = createFileRoute("/reservations")({
   component: () => null,
 });
 
-const STATUSES: (ReservationStatus | "ALL")[] = ["ALL", "PENDING", "REJECTED", "APPROVED", "ACTIVE", "RETURNED", "OVERDUE"];
+const STATUSES: (ReservationStatus | "ALL")[] = [
+  "ALL",
+  "PENDING",
+  "REJECTED",
+  "APPROVED",
+  "ACTIVE",
+  "RETURNED",
+  "OVERDUE",
+];
 const PAGE_SIZE = 8;
 
 export function ReservationsPage() {
@@ -39,7 +67,8 @@ export function ReservationsPage() {
 
   const { data: reservations, isLoading } = useQuery({
     queryKey: ["reservations", statusFilter],
-    queryFn: () => (statusFilter === "ALL" ? api.reservations.list() : api.reservations.byStatus(statusFilter)),
+    queryFn: () =>
+      statusFilter === "ALL" ? api.reservations.list() : api.reservations.byStatus(statusFilter),
   });
   const { data: students } = useQuery({ queryKey: ["students"], queryFn: api.students.list });
   const { data: resources } = useQuery({ queryKey: ["resources"], queryFn: api.resources.list });
@@ -115,11 +144,19 @@ export function ReservationsPage() {
   });
 
   return (
-    <PageShell title="Reservations" subtitle="Review requests, approve borrowing, and track returns">
+    <PageShell
+      title="Reservations"
+      subtitle="Review requests, approve borrowing, and track returns"
+    >
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="relative min-w-[200px] max-w-sm flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." className="pl-9" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search..."
+            className="pl-9"
+          />
         </div>
         <Select value={studentFilter} onValueChange={setStudentFilter}>
           <SelectTrigger className="w-[200px]">
@@ -158,11 +195,18 @@ export function ReservationsPage() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-20 animate-pulse rounded-xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState icon={CalendarCheck} title="No reservations" description="Create one to start tracking equipment usage." />
+        <EmptyState
+          icon={CalendarCheck}
+          title="No reservations"
+          description="Create one to start tracking equipment usage."
+        />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
           <div className="hidden grid-cols-[1.8fr_1.4fr_1fr_1fr_1fr_auto] gap-4 border-b border-border bg-secondary/50 px-6 py-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:grid">
@@ -255,24 +299,39 @@ function ReservationRow({
       </div>
       <div className="flex justify-end gap-1.5">
         {reservation.status === "PENDING" && (
-          <Button size="sm" variant="ghost" onClick={onApprove} className="gap-1.5 text-primary hover:text-primary">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onApprove}
+            className="gap-1.5 text-primary hover:text-primary"
+          >
             <CheckCheck className="h-3.5 w-3.5" /> Approve
           </Button>
         )}
         {reservation.status === "OVERDUE" && (
-          <Button size="sm" variant="ghost" onClick={onAlert} className="gap-1.5 text-amber-700 hover:text-amber-700">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onAlert}
+            className="gap-1.5 text-amber-700 hover:text-amber-700"
+          >
             <Send className="h-3.5 w-3.5" /> Alert
           </Button>
         )}
-        {reservation.status !== "RETURNED"
-          && reservation.status !== "PENDING"
-          && reservation.status !== "APPROVED"
-          && reservation.status !== "REJECTED" && (
-          <Button size="sm" variant="ghost" onClick={onReturn} className="gap-1.5">
-            <CornerDownLeft className="h-3.5 w-3.5" /> Return
-          </Button>
-        )}
-        <Button size="sm" variant="ghost" onClick={onDelete} className="text-destructive hover:text-destructive">
+        {reservation.status !== "RETURNED" &&
+          reservation.status !== "PENDING" &&
+          reservation.status !== "APPROVED" &&
+          reservation.status !== "REJECTED" && (
+            <Button size="sm" variant="ghost" onClick={onReturn} className="gap-1.5">
+              <CornerDownLeft className="h-3.5 w-3.5" /> Return
+            </Button>
+          )}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onDelete}
+          className="text-destructive hover:text-destructive"
+        >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -280,7 +339,13 @@ function ReservationRow({
   );
 }
 
-type NewValues = { studentId: string; resourceId: string; startDate: string; durationDays: string; purpose: string };
+type NewValues = {
+  studentId: string;
+  resourceId: string;
+  startDate: string;
+  durationDays: string;
+  purpose: string;
+};
 type AlertValues = { message: string };
 
 function NewReservationDialog({
@@ -337,8 +402,13 @@ function NewReservationDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit((values) => mut.mutate(values))} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Student</Label>
-            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm" {...register("studentId", { required: "Required" })}>
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Student
+            </Label>
+            <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              {...register("studentId", { required: "Required" })}
+            >
               <option value="">Select a student...</option>
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -346,11 +416,18 @@ function NewReservationDialog({
                 </option>
               ))}
             </select>
-            {errors.studentId && <p className="text-xs text-destructive">{errors.studentId.message}</p>}
+            {errors.studentId && (
+              <p className="text-xs text-destructive">{errors.studentId.message}</p>
+            )}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Resource</Label>
-            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm" {...register("resourceId", { required: "Required" })}>
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Resource
+            </Label>
+            <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              {...register("resourceId", { required: "Required" })}
+            >
               <option value="">Select a resource...</option>
               {resources.map((resource) => (
                 <option key={resource.id} value={resource.id}>
@@ -358,19 +435,29 @@ function NewReservationDialog({
                 </option>
               ))}
             </select>
-            {errors.resourceId && <p className="text-xs text-destructive">{errors.resourceId.message}</p>}
+            {errors.resourceId && (
+              <p className="text-xs text-destructive">{errors.resourceId.message}</p>
+            )}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Purpose</Label>
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Purpose
+            </Label>
             <Input placeholder="Optional staff note" {...register("purpose")} />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Start date</Label>
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Start date
+            </Label>
             <Input type="date" {...register("startDate", { required: "Required" })} />
-            {errors.startDate && <p className="text-xs text-destructive">{errors.startDate.message}</p>}
+            {errors.startDate && (
+              <p className="text-xs text-destructive">{errors.startDate.message}</p>
+            )}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Duration (calendar days)</Label>
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Duration (calendar days)
+            </Label>
             <Input
               type="number"
               min={1}
@@ -385,7 +472,9 @@ function NewReservationDialog({
                 },
               })}
             />
-            {errors.durationDays && <p className="text-xs text-destructive">{errors.durationDays.message}</p>}
+            {errors.durationDays && (
+              <p className="text-xs text-destructive">{errors.durationDays.message}</p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
@@ -414,16 +503,11 @@ function AdminAlertDialog({
   onSubmit: (message: string) => void;
   isSubmitting: boolean;
 }) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-  } = useForm<AlertValues>({
+  const { register, handleSubmit, reset } = useForm<AlertValues>({
     values: {
-      message:
-        reservation?.resourceName
-          ? `Please return ${reservation.resourceName} as soon as possible because the borrowing deadline has passed.`
-          : "",
+      message: reservation?.resourceName
+        ? `Please return ${reservation.resourceName} as soon as possible because the borrowing deadline has passed.`
+        : "",
     },
   });
 

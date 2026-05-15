@@ -6,10 +6,13 @@ type StudentSession = {
   username: string;
   fullName: string;
   email: string;
+  token: string;
 };
 
 type AdminSession = {
   username: string;
+  displayName?: string;
+  token: string;
 };
 
 interface AuthContextValue {
@@ -48,15 +51,26 @@ function writeStorage<T>(key: string, value: T | null) {
 }
 
 export function hasStudentSession() {
-  return !!readStorage<StudentSession>(STUDENT_KEY);
+  return !!readStorage<StudentSession>(STUDENT_KEY)?.token;
 }
 
 export function hasAdminSession() {
-  return !!readStorage<AdminSession>(ADMIN_KEY);
+  return !!readStorage<AdminSession>(ADMIN_KEY)?.token;
 }
 
 export function getStoredStudentSession() {
   return readStorage<StudentSession>(STUDENT_KEY);
+}
+
+export function getStoredAuthToken() {
+  const admin = readStorage<AdminSession>(ADMIN_KEY);
+  const student = readStorage<StudentSession>(STUDENT_KEY);
+
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+    return admin?.token || null;
+  }
+
+  return student?.token || null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -65,8 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<AdminSession | null>(null);
 
   useEffect(() => {
-    setStudent(readStorage<StudentSession>(STUDENT_KEY));
-    setAdmin(readStorage<AdminSession>(ADMIN_KEY));
+    const storedStudent = readStorage<StudentSession>(STUDENT_KEY);
+    const storedAdmin = readStorage<AdminSession>(ADMIN_KEY);
+    setStudent(storedStudent?.token ? storedStudent : null);
+    setAdmin(storedAdmin?.token ? storedAdmin : null);
+    if (storedStudent && !storedStudent.token) writeStorage(STUDENT_KEY, null);
+    if (storedAdmin && !storedAdmin.token) writeStorage(ADMIN_KEY, null);
     setReady(true);
   }, []);
 

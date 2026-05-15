@@ -6,15 +6,27 @@ import type {
   Resource,
   Student,
   Tag,
+  AuthResponse,
 } from "./types";
+import { getStoredAuthToken } from "./auth";
+
+declare global {
+  interface Window {
+    __API_BASE__?: string;
+  }
+}
 
 export const API_BASE =
-  (typeof window !== "undefined" && (window as any).__API_BASE__) ||
-  "http://localhost:8080/api";
+  (typeof window !== "undefined" && window.__API_BASE__) || "http://localhost:8080/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getStoredAuthToken();
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init?.headers || {}),
+    },
     ...init,
   });
   if (!res.ok) {
@@ -28,6 +40,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  auth: {
+    adminLogin: (data: { username: string; password: string }) =>
+      request<AuthResponse>("/auth/admin/login", { method: "POST", body: JSON.stringify(data) }),
+    studentLogin: (data: { email: string; password: string }) =>
+      request<AuthResponse>("/auth/student/login", { method: "POST", body: JSON.stringify(data) }),
+  },
   dashboard: {
     summary: () => request<DashboardSummary>("/dashboard/summary"),
   },
@@ -36,8 +54,6 @@ export const api = {
     get: (id: number) => request<Student>(`/students/${id}`),
     search: (keyword: string) =>
       request<Student[]>(`/students/search?keyword=${encodeURIComponent(keyword)}`),
-    login: (data: { email: string; password: string }) =>
-      request<Student>("/students/login", { method: "POST", body: JSON.stringify(data) }),
     create: (data: Partial<Student>) =>
       request<Student>("/students", { method: "POST", body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Student>) =>
@@ -61,10 +77,17 @@ export const api = {
       request<Resource[]>(`/resources/search/type?type=${encodeURIComponent(type)}`),
     searchTag: (name: string) =>
       request<Resource[]>(`/resources/search/tag?name=${encodeURIComponent(name)}`),
-    create: (data: { name: string; type: string; assetCode: string; quantity: number; tagIds: number[] }) =>
-      request<Resource>("/resources", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: number, data: { name: string; type: string; assetCode: string; quantity: number; tagIds: number[] }) =>
-      request<Resource>(`/resources/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    create: (data: {
+      name: string;
+      type: string;
+      assetCode: string;
+      quantity: number;
+      tagIds: number[];
+    }) => request<Resource>("/resources", { method: "POST", body: JSON.stringify(data) }),
+    update: (
+      id: number,
+      data: { name: string; type: string; assetCode: string; quantity: number; tagIds: number[] },
+    ) => request<Resource>(`/resources/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     remove: (id: number) => request<void>(`/resources/${id}`, { method: "DELETE" }),
   },
   reservations: {
@@ -80,8 +103,7 @@ export const api = {
       startDate: string;
       durationDays?: number;
       purpose?: string;
-    }) =>
-      request<Reservation>("/reservations", { method: "POST", body: JSON.stringify(data) }),
+    }) => request<Reservation>("/reservations", { method: "POST", body: JSON.stringify(data) }),
     createStudentRequest: (data: {
       studentId: number;
       resourceId: number;
@@ -109,8 +131,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify(data),
       }),
-    approve: (id: number) =>
-      request<Reservation>(`/reservations/${id}/approve`, { method: "PUT" }),
+    approve: (id: number) => request<Reservation>(`/reservations/${id}/approve`, { method: "PUT" }),
     markReturned: (id: number) =>
       request<Reservation>(`/reservations/${id}/return`, { method: "PUT" }),
     remove: (id: number) => request<void>(`/reservations/${id}`, { method: "DELETE" }),
@@ -118,8 +139,7 @@ export const api = {
   notifications: {
     byStudent: (studentId: number) =>
       request<Notification[]>(`/notifications/student/${studentId}`),
-    markRead: (id: number) =>
-      request<Notification>(`/notifications/${id}/read`, { method: "PUT" }),
+    markRead: (id: number) => request<Notification>(`/notifications/${id}/read`, { method: "PUT" }),
     markAllRead: (studentId: number) =>
       request<void>(`/notifications/student/${studentId}/read-all`, { method: "PUT" }),
     sendReturnAlert: (reservationId: number, data?: { message?: string }) =>

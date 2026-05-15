@@ -45,7 +45,9 @@ function StudentEntryPage() {
             and track your reservations independently from the administration dashboard.
           </p>
           <div className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <div className="text-xs font-semibold uppercase tracking-widest text-accent">Student access</div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-accent">
+              Student access
+            </div>
             <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
               <li>Request cameras, kits, and lab equipment before taking them.</li>
               <li>Track your active, returned, and overdue reservations.</li>
@@ -62,7 +64,9 @@ function StudentEntryPage() {
 
           {student && (
             <div className="mt-4 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-sm">
-              <p className="font-medium text-foreground">You are already signed in as {student.fullName}.</p>
+              <p className="font-medium text-foreground">
+                You are already signed in as {student.fullName}.
+              </p>
               <p className="mt-1 text-muted-foreground">
                 Continue to your portal or sign out to use another student account.
               </p>
@@ -99,7 +103,9 @@ function StudentEntryPage() {
                 placeholder="Enter your password"
                 {...register("password", { required: "Password is required" })}
               />
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-xs text-destructive">{errors.password.message}</p>
+              )}
             </div>
 
             <Button
@@ -107,16 +113,21 @@ function StudentEntryPage() {
               className="w-full"
               onClick={handleSubmit(async (values) => {
                 try {
-                  const loggedStudent = await api.students.login({
+                  const auth = await api.auth.studentLogin({
                     email: values.email.trim().toLowerCase(),
                     password: values.password,
                   });
+                  const loggedStudent = auth.user;
 
                   loginStudent({
                     id: String(loggedStudent.id),
                     username: loggedStudent.username,
-                    fullName: loggedStudent.profile?.fullName || loggedStudent.username,
+                    fullName:
+                      loggedStudent.displayName ||
+                      loggedStudent.profile?.fullName ||
+                      loggedStudent.username,
                     email: loggedStudent.email,
+                    token: auth.token,
                   });
                   navigate({ to: "/borrow", replace: true });
                 } catch {
@@ -129,7 +140,8 @@ function StudentEntryPage() {
           </div>
 
           <div className="mt-6 rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">
-            Administrators should use the separate admin login at <span className="font-medium text-foreground">/admin/auth</span>.
+            Administrators should use the separate admin login at{" "}
+            <span className="font-medium text-foreground">/admin/auth</span>.
           </div>
         </section>
       </div>

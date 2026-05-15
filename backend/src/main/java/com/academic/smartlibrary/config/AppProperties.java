@@ -7,6 +7,8 @@ public record AppProperties(
         String name,
         String message,
         String frontendUrl,
-        Integer borrowDays
+        Integer borrowDays,
+        String jwtSecret,
+        Integer jwtExpirationHours
 ) {
 }

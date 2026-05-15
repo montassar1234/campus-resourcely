@@ -12,7 +12,13 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/tags")({
   beforeLoad: () => {
@@ -47,7 +53,12 @@ export function TagsPage() {
       <div className="mb-6 flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
         <div className="relative w-full md:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tags..." className="pl-9" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tags..."
+            className="pl-9"
+          />
         </div>
         <Button
           onClick={() => {
@@ -63,11 +74,18 @@ export function TagsPage() {
       {isLoading ? (
         <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl border border-border bg-card/60" />
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-xl border border-border bg-card/60"
+            />
           ))}
         </div>
       ) : (data ?? []).length === 0 ? (
-        <EmptyState icon={TagIcon} title="No tags yet" description="Create your first tag to categorize resources." />
+        <EmptyState
+          icon={TagIcon}
+          title="No tags yet"
+          description="Create your first tag to categorize resources."
+        />
       ) : (
         <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4">
           {data!.map((tag) => (
@@ -88,10 +106,22 @@ export function TagsPage() {
                 </div>
               </div>
               <div className="flex gap-1 opacity-0 transition group-hover:opacity-100">
-                <Button size="icon" variant="ghost" onClick={() => { setEditing(tag); setDialogOpen(true); }}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(tag);
+                    setDialogOpen(true);
+                  }}
+                >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => setConfirmId(tag.id)} className="text-destructive hover:text-destructive">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setConfirmId(tag.id)}
+                  className="text-destructive hover:text-destructive"
+                >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -134,7 +164,8 @@ function TagDialog({
     values: { name: editing?.name ?? "" },
   });
   const mut = useMutation({
-    mutationFn: (values: { name: string }) => (editing ? api.tags.update(editing.id, values) : api.tags.create(values)),
+    mutationFn: (values: { name: string }) =>
+      editing ? api.tags.update(editing.id, values) : api.tags.create(values),
     onSuccess: () => {
       toast.success(editing ? "Tag updated" : "Tag created");
       qc.invalidateQueries({ queryKey: ["tags"] });
@@ -152,9 +183,14 @@ function TagDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit((values) => mut.mutate(values))} className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Name</Label>
+            <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Name
+            </Label>
             <Input
-              {...register("name", { required: "Required", maxLength: { value: 50, message: "Max 50 chars" } })}
+              {...register("name", {
+                required: "Required",
+                maxLength: { value: 50, message: "Max 50 chars" },
+              })}
               placeholder="e.g. Camera, Electronics"
             />
             {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}

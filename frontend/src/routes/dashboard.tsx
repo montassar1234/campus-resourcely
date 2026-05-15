@@ -37,9 +37,13 @@ function StatCard({
 }) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elevated">
-      <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-10 blur-2xl ${accent}`} />
+      <div
+        className={`absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-10 blur-2xl ${accent}`}
+      />
       <div className="flex items-start justify-between">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent} text-white`}>
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent} text-white`}
+        >
           <Icon className="h-5 w-5" />
         </div>
         <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
@@ -54,7 +58,10 @@ function StatCard({
 export function DashboardPage() {
   const summary = useQuery({ queryKey: ["dashboard"], queryFn: api.dashboard.summary });
   const reservations = useQuery({ queryKey: ["reservations"], queryFn: api.reservations.list });
-  const overdue = useQuery({ queryKey: ["reservations", "overdue"], queryFn: api.reservations.overdue });
+  const overdue = useQuery({
+    queryKey: ["reservations", "overdue"],
+    queryFn: api.reservations.overdue,
+  });
 
   const recent = (reservations.data ?? []).slice(0, 6);
 
@@ -66,7 +73,9 @@ export function DashboardPage() {
       >
         <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="max-w-2xl">
-            <div className="text-xs font-semibold uppercase tracking-widest opacity-80">Welcome back</div>
+            <div className="text-xs font-semibold uppercase tracking-widest opacity-80">
+              Welcome back
+            </div>
             <h2 className="mt-2 font-display text-3xl font-semibold leading-tight md:text-4xl">
               Manage your campus equipment, in one elegant view.
             </h2>
@@ -94,12 +103,42 @@ export function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard icon={Users} label="Students" value={summary.data?.totalStudents ?? "-"} accent="bg-primary" />
-        <StatCard icon={Boxes} label="Resources" value={summary.data?.totalResources ?? "-"} accent="bg-accent" />
-        <StatCard icon={Tags} label="Tags" value={summary.data?.totalTags ?? "-"} accent="bg-primary/80" />
-        <StatCard icon={CalendarCheck} label="Active" value={summary.data?.activeReservations ?? "-"} accent="bg-success" />
-        <StatCard icon={AlertTriangle} label="Overdue" value={summary.data?.overdueReservations ?? "-"} accent="bg-destructive" />
-        <StatCard icon={PackageCheck} label="Available" value={summary.data?.availableUnits ?? "-"} accent="bg-foreground" />
+        <StatCard
+          icon={Users}
+          label="Students"
+          value={summary.data?.totalStudents ?? "-"}
+          accent="bg-primary"
+        />
+        <StatCard
+          icon={Boxes}
+          label="Resources"
+          value={summary.data?.totalResources ?? "-"}
+          accent="bg-accent"
+        />
+        <StatCard
+          icon={Tags}
+          label="Tags"
+          value={summary.data?.totalTags ?? "-"}
+          accent="bg-primary/80"
+        />
+        <StatCard
+          icon={CalendarCheck}
+          label="Active"
+          value={summary.data?.activeReservations ?? "-"}
+          accent="bg-success"
+        />
+        <StatCard
+          icon={AlertTriangle}
+          label="Overdue"
+          value={summary.data?.overdueReservations ?? "-"}
+          accent="bg-destructive"
+        />
+        <StatCard
+          icon={PackageCheck}
+          label="Available"
+          value={summary.data?.availableUnits ?? "-"}
+          accent="bg-foreground"
+        />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
@@ -107,15 +146,22 @@ export function DashboardPage() {
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
             <div>
               <h3 className="font-display text-lg font-semibold">Recent reservations</h3>
-              <p className="text-xs text-muted-foreground">Latest reservation activity across the campus</p>
+              <p className="text-xs text-muted-foreground">
+                Latest reservation activity across the campus
+              </p>
             </div>
-            <Link to="/admin/reservations" className="text-xs font-medium text-accent hover:underline">
+            <Link
+              to="/admin/reservations"
+              className="text-xs font-medium text-accent hover:underline"
+            >
               View all →
             </Link>
           </div>
           <div className="divide-y divide-border">
             {recent.length === 0 && (
-              <div className="px-6 py-10 text-center text-sm text-muted-foreground">No reservations yet.</div>
+              <div className="px-6 py-10 text-center text-sm text-muted-foreground">
+                No reservations yet.
+              </div>
             )}
             {recent.map((r) => (
               <div key={r.id} className="flex items-center justify-between gap-4 px-6 py-4">
