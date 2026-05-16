@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, MailWarning } from "lucide-react";
+import { BellRing, CheckCircle2, ClipboardList, MailWarning } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { Notification } from "@/lib/types";
@@ -11,20 +11,25 @@ import { useAuth } from "@/lib/auth";
 const PAGE_SIZE = 6;
 
 export function NotificationsPanel({
+  audience = "student",
   compact = false,
   onNavigate,
 }: {
+  audience?: "admin" | "student";
   compact?: boolean;
   onNavigate?: () => void;
 }) {
-  const { student } = useAuth();
+  const { student, admin } = useAuth();
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const isAdminFeed = audience === "admin";
+  const queryKey = ["notifications", audience, student?.id] as const;
 
   const notificationsQuery = useQuery({
-    queryKey: ["notifications", "student", student?.id],
-    queryFn: () => api.notifications.byStudent(Number(student!.id)),
-    enabled: !!student?.id,
+    queryKey,
+    queryFn: () =>
+      isAdminFeed ? api.notifications.admin() : api.notifications.byStudent(Number(student!.id)),
+    enabled: isAdminFeed ? !!admin : !!student?.id,
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
@@ -33,14 +38,15 @@ export function NotificationsPanel({
   const markReadMut = useMutation({
     mutationFn: (id: number) => api.notifications.markRead(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["notifications", "student", student?.id] });
+      qc.invalidateQueries({ queryKey });
     },
   });
 
   const markAllMut = useMutation({
-    mutationFn: () => api.notifications.markAllRead(Number(student!.id)),
+    mutationFn: () =>
+      isAdminFeed ? api.notifications.markAllAdminRead() : api.notifications.markAllRead(Number(student!.id)),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["notifications", "student", student?.id] });
+      qc.invalidateQueries({ queryKey });
     },
   });
 
@@ -50,7 +56,7 @@ export function NotificationsPanel({
 
   useEffect(() => {
     setPage(1);
-  }, [student?.id]);
+  }, [audience, student?.id]);
 
   useEffect(() => {
     setPage((currentPage) => Math.min(currentPage, totalPages));
@@ -68,10 +74,10 @@ export function NotificationsPanel({
   const firstItemIndex = notifications.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const lastItemIndex = compact ? items.length : Math.min(page * PAGE_SIZE, notifications.length);
 
-  if (!student) {
+  if ((isAdminFeed && !admin) || (!isAdminFeed && !student)) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-        Notifications are available after signing in as a student.
+        Notifications are available after signing in.
       </div>
     );
   }
@@ -112,8 +118,7 @@ export function NotificationsPanel({
         </div>
       ) : notifications.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
-          No notifications yet. Reminders will appear automatically when a return deadline gets
-          close.
+          No notifications yet.
         </div>
       ) : (
         <div className="space-y-4">
@@ -145,13 +150,15 @@ export function NotificationsPanel({
 
       {compact && (
         <div className="flex items-center justify-end border-t border-border pt-3">
-          <Link
-            to="/notifications"
-            onClick={onNavigate}
-            className="text-sm font-medium text-accent hover:underline"
-          >
-            View all notifications
-          </Link>
+          {!isAdminFeed && (
+            <Link
+              to="/notifications"
+              onClick={onNavigate}
+              className="text-sm font-medium text-accent hover:underline"
+            >
+              View all notifications
+            </Link>
+          )}
         </div>
       )}
     </div>
@@ -178,12 +185,8 @@ function NotificationCard({
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {notification.type === "ADMIN_RETURN_ALERT" ? (
-              <MailWarning className="h-3.5 w-3.5 text-destructive" />
-            ) : (
-              <BellRing className="h-3.5 w-3.5 text-accent" />
-            )}
-            {notification.type === "ADMIN_RETURN_ALERT" ? "Admin alert" : "Auto reminder"}
+            <NotificationIcon type={notification.type} />
+            {notificationLabel(notification.type)}
           </div>
           <div className="mt-2 text-sm font-medium text-foreground">
             {notification.resourceName}
@@ -208,4 +211,28 @@ function NotificationCard({
       </div>
     </div>
   );
+}
+
+function NotificationIcon({ type }: { type: Notification["type"] }) {
+  if (type === "ADMIN_RETURN_ALERT") {
+    return <MailWarning className="h-3.5 w-3.5 text-destructive" />;
+  }
+  if (type === "RESERVATION_REQUESTED") {
+    return <ClipboardList className="h-3.5 w-3.5 text-accent" />;
+  }
+  if (type === "RESERVATION_APPROVED") {
+    return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />;
+  }
+  if (type === "RESERVATION_REJECTED") {
+    return <MailWarning className="h-3.5 w-3.5 text-destructive" />;
+  }
+  return <BellRing className="h-3.5 w-3.5 text-accent" />;
+}
+
+function notificationLabel(type: Notification["type"]) {
+  if (type === "RESERVATION_REQUESTED") return "New request";
+  if (type === "RESERVATION_APPROVED") return "Approved";
+  if (type === "RESERVATION_REJECTED") return "Rejected";
+  if (type === "ADMIN_RETURN_ALERT") return "Admin alert";
+  return "Auto reminder";
 }

@@ -42,21 +42,22 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Campus Resource Hub — Reserve campus equipment" },
+      { title: "TEK-UP Resource Hub — Reserve TEK-UP equipment" },
       {
         name: "description",
         content:
-          "A modern academic platform for booking, tracking, and managing shared campus equipment — cameras, Arduino kits, projectors, and lab devices.",
+          "A modern academic platform for booking, tracking, and managing shared TEK-UP equipment — cameras, Arduino kits, projectors, and lab devices.",
       },
-      { property: "og:title", content: "Campus Resource Hub" },
+      { property: "og:title", content: "TEK-UP Resource Hub" },
       {
         property: "og:description",
-        content: "Reserve campus equipment, track returns, manage inventory.",
+        content: "Reserve TEK-UP equipment, track returns, manage inventory.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

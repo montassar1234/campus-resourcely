@@ -38,7 +38,7 @@ public class AuthService {
         AuthUserResponse user = new AuthUserResponse(
                 admin.getId(),
                 admin.getUsername(),
-                "admin@campus.edu",
+                "admin@tek-up.tn",
                 admin.getDisplayName(),
                 UserRole.ADMIN,
                 null

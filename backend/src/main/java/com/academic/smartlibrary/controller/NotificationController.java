@@ -29,6 +29,11 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.findByStudent(studentId));
     }
 
+    @GetMapping("/admin")
+    public ResponseEntity<List<NotificationResponse>> getAdminNotifications() {
+        return ResponseEntity.ok(notificationService.findAdminNotifications());
+    }
+
     @PutMapping("/{id}/read")
     public ResponseEntity<NotificationResponse> markAsRead(@PathVariable Long id) {
         return ResponseEntity.ok(notificationService.markAsRead(id));
@@ -37,6 +42,12 @@ public class NotificationController {
     @PutMapping("/student/{studentId}/read-all")
     public ResponseEntity<Void> markAllAsRead(@PathVariable Long studentId) {
         notificationService.markAllAsRead(studentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/admin/read-all")
+    public ResponseEntity<Void> markAllAdminAsRead() {
+        notificationService.markAllAdminAsRead();
         return ResponseEntity.noContent().build();
     }
 

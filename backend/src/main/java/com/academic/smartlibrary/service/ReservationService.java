@@ -25,17 +25,20 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final StudentService studentService;
     private final ResourceService resourceService;
+    private final NotificationService notificationService;
     private final AppProperties appProperties;
 
     public ReservationService(
             ReservationRepository reservationRepository,
             StudentService studentService,
             ResourceService resourceService,
+            NotificationService notificationService,
             AppProperties appProperties
     ) {
         this.reservationRepository = reservationRepository;
         this.studentService = studentService;
         this.resourceService = resourceService;
+        this.notificationService = notificationService;
         this.appProperties = appProperties;
     }
 
@@ -100,8 +103,7 @@ public class ReservationService {
     private ReservationResponse createAdminReservation(Student student, Resource resource, LocalDate startDate, Integer durationDays, String purpose) {
         int effectiveBorrowDays = effectiveDuration(durationDays);
         LocalDate normalizedStartDate = normalizeRequestedStartDate(startDate);
-        List<Reservation> resourceReservations = reservationRepository.findByResourceId(resource.getId());
-        ensureAvailability(resource, resourceReservations, normalizedStartDate, effectiveBorrowDays, null);
+        ensureAvailability(resource, normalizedStartDate, effectiveBorrowDays, null);
         LocalDate endDateInclusive = endDateInclusive(normalizedStartDate, effectiveBorrowDays);
 
         Reservation reservation = Reservation.builder()
@@ -114,10 +116,9 @@ public class ReservationService {
                 .purpose(normalizePurpose(purpose))
                 .status(normalizedStartDate.isAfter(LocalDate.now()) ? ReservationStatus.APPROVED : ReservationStatus.ACTIVE)
                 .build();
-        if (!normalizedStartDate.isAfter(LocalDate.now())) {
-            updateReservedQuantity(resource, -1);
-        }
-        return toResponse(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        rejectOverflowPendingForSameResource(saved);
+        return toResponse(saved);
     }
 
     private ReservationResponse createPendingReservation(Student student, Resource resource, LocalDate startDate, Integer durationDays, String purpose) {
@@ -125,9 +126,8 @@ public class ReservationService {
         LocalDate normalizedStartDate = normalizeStudentRequestedStartDate(startDate);
         ensureStudentBoundaryWeekdays(normalizedStartDate, effectiveBorrowDays);
         ensureStudentDurationWeekdayCap(normalizedStartDate, effectiveBorrowDays);
-        List<Reservation> resourceReservations = reservationRepository.findByResourceId(resource.getId());
-        ensureAvailability(resource, resourceReservations, normalizedStartDate, effectiveBorrowDays, null);
 
+        // Pending requests do not reserve a unit yet. The final capacity check happens when an admin approves.
         Reservation reservation = Reservation.builder()
                 .student(student)
                 .resource(resource)
@@ -136,7 +136,9 @@ public class ReservationService {
                 .purpose(normalizePurpose(purpose))
                 .status(ReservationStatus.PENDING)
                 .build();
-        return toResponse(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        notificationService.notifyAdminReservationRequested(saved);
+        return toResponse(saved);
     }
 
     public ReservationResponse approve(Long id) {
@@ -147,18 +149,23 @@ public class ReservationService {
 
         Resource resource = reservation.getResource();
         LocalDate effectiveStartDate = reservation.getStartDate().isBefore(LocalDate.now()) ? LocalDate.now() : reservation.getStartDate();
-        List<Reservation> resourceReservations = reservationRepository.findByResourceId(resource.getId());
-        ensureAvailability(resource, resourceReservations, effectiveStartDate, reservation.getDurationDays(), reservation.getId());
+        // Another admin approval may have filled the same dates, so approval is the last capacity gate.
+        if (!hasAvailability(resource, effectiveStartDate, reservation.getDurationDays(), reservation.getId())) {
+            reservation.setStatus(ReservationStatus.REJECTED);
+            Reservation rejected = reservationRepository.save(reservation);
+            notificationService.notifyStudentReservationRejected(rejected);
+            return toResponse(rejected);
+        }
 
         reservation.setStartDate(effectiveStartDate);
         reservation.setCheckoutDate(effectiveStartDate);
         reservation.setExpectedReturnDate(endDateInclusive(effectiveStartDate, reservation.getDurationDays()));
         reservation.setStatus(effectiveStartDate.isAfter(LocalDate.now()) ? ReservationStatus.APPROVED : ReservationStatus.ACTIVE);
-        if (!effectiveStartDate.isAfter(LocalDate.now())) {
-            updateReservedQuantity(resource, -1);
-        }
 
-        return toResponse(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        notificationService.notifyStudentReservationApproved(saved);
+        rejectOverflowPendingForSameResource(saved);
+        return toResponse(saved);
     }
 
     public ReservationResponse markReturned(Long id) {
@@ -176,18 +183,13 @@ public class ReservationService {
         reservation.setActualReturnDate(LocalDate.now());
         reservation.setStatus(ReservationStatus.RETURNED);
 
-        updateReservedQuantity(reservation.getResource(), 1);
-
         return toResponse(reservationRepository.save(reservation));
     }
 
     public void delete(Long id) {
         Reservation reservation = getReservationEntity(id);
-        if (reservation.getActualReturnDate() == null
-                && (reservation.getStatus() == ReservationStatus.ACTIVE
-                || reservation.getStatus() == ReservationStatus.OVERDUE)) {
-            updateReservedQuantity(reservation.getResource(), 1);
-        }
+        // MySQL keeps a foreign key from notifications to reservations, so linked notifications go first.
+        notificationService.deleteForReservation(id);
         reservationRepository.delete(reservation);
     }
 
@@ -220,9 +222,6 @@ public class ReservationService {
             } else if (reservation.getStartDate().isAfter(today)) {
                 reservation.setStatus(ReservationStatus.APPROVED);
             } else {
-                if (reservation.getStatus() == ReservationStatus.APPROVED) {
-                    updateReservedQuantity(reservation.getResource(), -1);
-                }
                 reservation.setStatus(ReservationStatus.ACTIVE);
             }
         }
@@ -310,25 +309,26 @@ public class ReservationService {
         return normalized;
     }
 
-    private void ensureAvailability(
-            Resource resource,
-            List<Reservation> resourceReservations,
-            LocalDate startDate,
-            int durationDays,
-            Long ignoredReservationId
-    ) {
-        LocalDate endDateExclusive = startDate.plusDays(durationDays);
-        int totalCapacity = resolveTotalCapacity(resource, resourceReservations);
-
-        long overlappingReservations = resourceReservations.stream()
-                .filter(reservation -> ignoredReservationId == null || !reservation.getId().equals(ignoredReservationId))
-                .filter(this::blocksAvailability)
-                .filter(reservation -> overlaps(startDate, endDateExclusive, reservation))
-                .count();
-
-        if (overlappingReservations >= totalCapacity) {
+    private void ensureAvailability(Resource resource, LocalDate startDate, int durationDays, Long ignoredReservationId) {
+        if (!hasAvailability(resource, startDate, durationDays, ignoredReservationId)) {
             throw new BusinessException("This equipment is fully booked for the selected dates");
         }
+    }
+
+    private boolean hasAvailability(Resource resource, LocalDate startDate, int durationDays, Long ignoredReservationId) {
+        int capacity = resource.getQuantity() == null ? 0 : resource.getQuantity();
+        if (capacity <= 0) {
+            return false;
+        }
+
+        LocalDate endDateInclusive = endDateInclusive(startDate, durationDays);
+        // Quantity is total capacity. Only confirmed reservations consume that capacity for overlapping dates.
+        long confirmedReservations = reservationRepository.findByResourceId(resource.getId()).stream()
+                .filter(reservation -> ignoredReservationId == null || !reservation.getId().equals(ignoredReservationId))
+                .filter(this::blocksAvailability)
+                .filter(reservation -> overlaps(startDate, endDateInclusive, reservation))
+                .count();
+        return confirmedReservations < capacity;
     }
 
     private boolean blocksAvailability(Reservation reservation) {
@@ -337,30 +337,28 @@ public class ReservationService {
                 || reservation.getStatus() == ReservationStatus.OVERDUE;
     }
 
-    private boolean overlaps(LocalDate requestedStart, LocalDate requestedEndExclusive, Reservation reservation) {
+    private boolean overlaps(LocalDate requestedStart, LocalDate requestedEndInclusive, Reservation reservation) {
         if (reservation.getStartDate() == null || reservation.getDurationDays() == null) {
             return false;
         }
-        LocalDate reservationEndExclusive = reservation.getStartDate().plusDays(reservation.getDurationDays());
-        return requestedStart.isBefore(reservationEndExclusive) && reservation.getStartDate().isBefore(requestedEndExclusive);
+        LocalDate reservationEndInclusive = endDateInclusive(reservation.getStartDate(), reservation.getDurationDays());
+        return !requestedStart.isAfter(reservationEndInclusive) && !reservation.getStartDate().isAfter(requestedEndInclusive);
     }
 
-    private int resolveTotalCapacity(Resource resource, List<Reservation> resourceReservations) {
-        long occupiedToday = resourceReservations.stream()
-                .filter(this::blocksCurrentInventory)
-                .filter(reservation -> overlaps(LocalDate.now(), LocalDate.now().plusDays(1), reservation))
-                .count();
-        return Math.max(resource.getQuantity() + (int) occupiedToday, 1);
-    }
-
-    private boolean blocksCurrentInventory(Reservation reservation) {
-        return reservation.getStatus() == ReservationStatus.ACTIVE
-                || reservation.getStatus() == ReservationStatus.OVERDUE;
-    }
-
-    private void updateReservedQuantity(Resource resource, int delta) {
-        resource.setQuantity(resource.getQuantity() + delta);
-        resourceService.save(resource);
+    private void rejectOverflowPendingForSameResource(Reservation confirmedReservation) {
+        List<Reservation> reservations = reservationRepository.findByResourceId(confirmedReservation.getResource().getId());
+        for (Reservation pending : reservations) {
+            if (pending.getStatus() != ReservationStatus.PENDING) {
+                continue;
+            }
+            // After one request is approved, older pending requests may no longer fit in the same dates.
+            if (hasAvailability(pending.getResource(), pending.getStartDate(), pending.getDurationDays(), pending.getId())) {
+                continue;
+            }
+            pending.setStatus(ReservationStatus.REJECTED);
+            Reservation rejected = reservationRepository.save(pending);
+            notificationService.notifyStudentReservationRejected(rejected);
+        }
     }
 
     private String normalizePurpose(String purpose) {

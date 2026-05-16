@@ -4,7 +4,7 @@ This note is meant to help you answer your professor quickly and accurately duri
 
 ## 1. One-Sentence Project Pitch
 
-Campus Resourcely is a Spring Boot REST backend for managing campus equipment reservations, where students request resources and administrators approve, track, and manage the reservation lifecycle.
+TEK-UP Resourcely is a Spring Boot REST backend for managing TEK-UP equipment reservations, where students request resources and administrators approve, track, and manage the reservation lifecycle.
 
 ## 2. Why Spring Boot Here?
 
@@ -100,6 +100,9 @@ Examples:
 - `@RestControllerAdvice`
 - `@ExceptionHandler`
 - `@Valid`
+- Spring Security filter chain
+- JWT authentication
+- role-based access control
 
 ## 6. JPA Relations To Mention
 
@@ -126,15 +129,17 @@ Why this matters:
 ### Admin approval
 
 1. Admin approves the request.
-2. Backend sets the reservation to `APPROVED` or `ACTIVE`.
-3. Stock is reduced only when the reservation becomes active.
+2. Backend checks if the selected dates still have capacity.
+3. Backend sets the reservation to `APPROVED` or `ACTIVE` when capacity is available.
+4. If another approved reservation already used the capacity, the request becomes `REJECTED`.
+5. The student receives an approval or rejection notification.
 
 ### Return
 
 1. Admin marks return.
 2. Backend sets `actualReturnDate`.
 3. Reservation becomes `RETURNED`.
-4. Stock is increased again.
+4. Quantity does not change, because quantity is total capacity and availability is calculated by dates.
 
 ### Overdue
 
@@ -148,7 +153,8 @@ Student reservation rules:
 - student must reserve at least 2 days in advance
 - start and end must be weekdays
 - reservation cannot exceed 7 weekdays
-- equipment must be available during the selected period
+- the date picker disables fully booked days
+- final capacity is checked again when the admin approves the request
 
 General validation:
 
@@ -161,6 +167,14 @@ General validation:
 Use this answer:
 
 “Notifications are handled in the backend. A scheduled Spring job runs every day at 8:00 AM and creates reminders for students who are close to the return deadline. Admins can also send a manual overdue alert.”
+
+Current notification cases:
+
+- admin receives a notification when a student creates a reservation request
+- student receives a notification when the admin approves the request
+- student receives a notification when the request is rejected because the date is no longer available
+- student receives automatic return reminders before the deadline
+- student can receive manual overdue alerts from the admin
 
 Technical keywords:
 
@@ -192,19 +206,42 @@ Use this answer:
 
 “Spring Data JPA reduces boilerplate for database access. I can define repositories as interfaces and let Spring generate common queries, while still keeping the code clean and readable.”
 
-## 14. Why XAMPP MySQL?
+## 14. How Authentication And RBAC Work
+
+Use this answer:
+
+“Authentication is handled in the Spring Boot backend. Students and admins log in through `/api/auth/student/login` or `/api/auth/admin/login`. The backend creates a JWT containing the user role, then `JwtAuthenticationFilter` reads that token on every protected request. `SecurityConfig` decides which endpoints require `ADMIN` or `STUDENT` access.”
+
+Important files:
+
+- `AuthController`
+- `AuthService`
+- `JwtService`
+- `JwtAuthenticationFilter`
+- `SecurityConfig`
+- `UserRole`
+
+What to say about RBAC:
+
+“Admin endpoints such as dashboard, students, tags, and reservation approval require the admin role. Student endpoints such as student reservation requests require the student role. This is server-side security, not only frontend hiding.”
+
+## 15. Why XAMPP MySQL?
 
 Use this answer:
 
 “The project uses XAMPP MySQL so the data is persistent during the demo. Spring Data JPA and Hibernate create or update the tables from the entity model, and the repositories use the same code as they would with another SQL database.”
 
-## 15. Why Is There A Data Seeder?
+If asked why XAMPP MySQL instead of an in-memory database:
+
+“An in-memory database is useful for quick tests, but the data disappears easily. For this validation I switched to XAMPP MySQL because the data stays available after restarting the backend, and the professor can inspect the tables directly in phpMyAdmin.”
+
+## 16. Why Is There A Data Seeder?
 
 Use this answer:
 
 “`DataSeeder` inserts sample students, resources, tags, and reservations at startup so the application is always ready for demonstration and testing.”
 
-## 16. Likely Professor Questions
+## 17. Likely Professor Questions
 
 ### Question: Where is dependency injection used?
 
@@ -234,7 +271,37 @@ Answer:
 
 Answer:
 
-“A scheduled backend method runs every day, checks reservations close to the return date, and creates `Notification` records in the database.”
+“Notifications are saved as `Notification` entities in MySQL. Some are created immediately by `ReservationService`, for example request, approval, and rejection notifications. Return reminders are created by a scheduled method that runs every day.”
+
+### Question: Why does the quantity not decrease on the resource card?
+
+Answer:
+
+“Quantity represents the total number of units owned by TEK-UP, not a changing availability number. Availability depends on the selected dates. If a resource has quantity 3, the same date range can have at most 3 confirmed reservations.”
+
+### Question: Why are some dates gray in the student calendar?
+
+Answer:
+
+“The frontend asks the backend for reservations of the selected resource. It counts only confirmed reservations: `APPROVED`, `ACTIVE`, and `OVERDUE`. When the count reaches the resource quantity for a date, that date becomes disabled.”
+
+### Question: What happens if several students request the same resource for the same dates?
+
+Answer:
+
+“Pending requests can exist at the same time because the admin has not approved them yet. When the admin approves one, the backend checks capacity again. If capacity is full, the remaining overlapping pending requests are automatically rejected and students are notified.”
+
+### Question: Where is the data saved?
+
+Answer:
+
+“The data is saved in the local XAMPP MySQL database named `campus_resourcely`. Hibernate creates and updates the tables from the JPA entities, and the data can be inspected in phpMyAdmin.”
+
+### Question: How did you solve N+1 / lazy loading problems?
+
+Answer:
+
+“For screens that need related data, repositories use `@EntityGraph` to fetch required relations such as reservation student/profile/resource and resource tags. For tag resource counts, I use a count query instead of loading an entire lazy collection.”
 
 ### Question: What are the limitations of your project?
 
@@ -242,7 +309,7 @@ Answer:
 
 “The main limitation is that demo passwords are not hashed with BCrypt yet. Authentication itself is implemented in the backend with JWT and role-based access control.”
 
-## 17. Best Final Summary
+## 18. Best Final Summary
 
 If you need to close strongly, say:
 

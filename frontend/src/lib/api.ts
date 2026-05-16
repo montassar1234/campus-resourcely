@@ -137,9 +137,12 @@ export const api = {
     remove: (id: number) => request<void>(`/reservations/${id}`, { method: "DELETE" }),
   },
   notifications: {
+    admin: () => request<Notification[]>("/notifications/admin"),
     byStudent: (studentId: number) =>
       request<Notification[]>(`/notifications/student/${studentId}`),
     markRead: (id: number) => request<Notification>(`/notifications/${id}/read`, { method: "PUT" }),
+    markAllAdminRead: () =>
+      request<void>("/notifications/admin/read-all", { method: "PUT" }),
     markAllRead: (studentId: number) =>
       request<void>(`/notifications/student/${studentId}/read-all`, { method: "PUT" }),
     sendReturnAlert: (reservationId: number, data?: { message?: string }) =>

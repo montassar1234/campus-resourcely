@@ -41,7 +41,7 @@ public class Notification {
     private Reservation reservation;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50, columnDefinition = "varchar(50)")
     private NotificationType type;
 
     @Column(nullable = false, length = 500)

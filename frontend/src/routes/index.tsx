@@ -41,7 +41,7 @@ function StudentEntryPage() {
             Enter the student portal.
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
-            Sign in with your student profile to access borrowing tools, request campus equipment,
+            Sign in with your student profile to access borrowing tools, request TEK-UP equipment,
             and track your reservations independently from the administration dashboard.
           </p>
           <div className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-soft">
@@ -59,7 +59,7 @@ function StudentEntryPage() {
         <section className="rounded-3xl border border-border bg-card p-6 shadow-elevated md:p-8">
           <h2 className="font-display text-2xl font-semibold">Student sign in</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter your campus email and password to continue.
+            Enter your TEK-UP email and password to continue.
           </p>
 
           {student && (
@@ -84,12 +84,12 @@ function StudentEntryPage() {
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Campus email
+                TEK-UP email
               </Label>
               <Input
                 type="email"
-                placeholder="yourname@campus.edu"
-                {...register("email", { required: "Campus email is required" })}
+                placeholder="yourname@tek-up.tn"
+                {...register("email", { required: "TEK-UP email is required" })}
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
             </div>

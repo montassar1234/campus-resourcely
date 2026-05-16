@@ -24,11 +24,12 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  const email = isAdmin ? "admin@campus.edu" : student?.email || "student@campus.edu";
+  const email = isAdmin ? "admin@tek-up.tn" : student?.email || "student@tek-up.tn";
   const notificationsQuery = useQuery({
-    queryKey: ["notifications", "student", student?.id],
-    queryFn: () => api.notifications.byStudent(Number(student!.id)),
-    enabled: !!student?.id && !isAdmin,
+    queryKey: ["notifications", isAdmin ? "admin" : "student", student?.id],
+    queryFn: () =>
+      isAdmin ? api.notifications.admin() : api.notifications.byStudent(Number(student!.id)),
+    enabled: isAdmin ? !!admin : !!student?.id,
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
@@ -73,7 +74,11 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
             </button>
           </PopoverTrigger>
           <PopoverContent align="end" sideOffset={10} className="w-[420px] p-4">
-            <NotificationsPanel compact onNavigate={() => setNotificationsOpen(false)} />
+            <NotificationsPanel
+              audience={isAdmin ? "admin" : "student"}
+              compact
+              onNavigate={() => setNotificationsOpen(false)}
+            />
           </PopoverContent>
         </Popover>
         <div className="flex items-center gap-2 rounded-full border border-border bg-card pl-1 pr-3 py-1">

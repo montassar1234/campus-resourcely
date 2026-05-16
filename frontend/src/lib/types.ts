@@ -52,7 +52,12 @@ export type ReservationStatus =
   | "ACTIVE"
   | "RETURNED"
   | "OVERDUE";
-export type NotificationType = "AUTO_RETURN_REMINDER" | "ADMIN_RETURN_ALERT";
+export type NotificationType =
+  | "RESERVATION_REQUESTED"
+  | "RESERVATION_APPROVED"
+  | "RESERVATION_REJECTED"
+  | "AUTO_RETURN_REMINDER"
+  | "ADMIN_RETURN_ALERT";
 
 export interface Reservation {
   id: number;

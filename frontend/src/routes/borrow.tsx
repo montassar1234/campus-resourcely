@@ -22,11 +22,11 @@ import { Input } from "@/components/ui/input";
 export const Route = createFileRoute("/borrow")({
   head: () => ({
     meta: [
-      { title: "Borrow Equipment - Campus Resource Hub" },
+      { title: "Borrow Equipment - TEK-UP Resource Hub" },
       {
         name: "description",
         content:
-          "Browse campus equipment and request a reservation from the availability calendar.",
+          "Browse TEK-UP equipment and request a reservation from the availability calendar.",
       },
     ],
   }),
@@ -184,9 +184,6 @@ function BorrowPage() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <Package className="h-5 w-5" />
                 </div>
-                <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-success">
-                  {r.quantity > 0 ? `${r.quantity} free now` : "Booked today"}
-                </span>
               </div>
               <h3 className="mt-4 font-display text-lg font-semibold leading-tight">{r.name}</h3>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -207,8 +204,8 @@ function BorrowPage() {
                 </div>
               )}
               <p className="mt-4 text-sm text-muted-foreground">
-                Open the calendar to pick your preferred reservation start date and send a request
-                to staff.
+                Open the calendar to see which dates still have capacity and send a request to
+                staff.
               </p>
               <div className="mt-auto pt-5">
                 <Button

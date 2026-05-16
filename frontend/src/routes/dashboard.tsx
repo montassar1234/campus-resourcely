@@ -66,7 +66,7 @@ export function DashboardPage() {
   const recent = (reservations.data ?? []).slice(0, 6);
 
   return (
-    <PageShell title="Dashboard" subtitle="Overview of campus inventory and activity">
+    <PageShell title="Dashboard" subtitle="Overview of TEK-UP inventory and activity">
       <div
         className="relative mb-8 overflow-hidden rounded-3xl border border-border p-6 text-primary-foreground md:p-8"
         style={{ background: "var(--gradient-hero)" }}
@@ -77,7 +77,7 @@ export function DashboardPage() {
               Welcome back
             </div>
             <h2 className="mt-2 font-display text-3xl font-semibold leading-tight md:text-4xl">
-              Manage your campus equipment, in one elegant view.
+              Manage your TEK-UP equipment, in one elegant view.
             </h2>
             <p className="mt-3 text-sm opacity-90">
               {summary.data
@@ -147,7 +147,7 @@ export function DashboardPage() {
             <div>
               <h3 className="font-display text-lg font-semibold">Recent reservations</h3>
               <p className="text-xs text-muted-foreground">
-                Latest reservation activity across the campus
+                Latest reservation activity across TEK-UP
               </p>
             </div>
             <Link

@@ -10,7 +10,6 @@ import {
   isBefore,
   isEqual,
   isSameDay,
-  parseISO,
   startOfToday,
 } from "date-fns";
 import { CalendarClock, CalendarRange, ShieldCheck, Sparkles } from "lucide-react";
@@ -55,6 +54,7 @@ export function ReservationRequestDialog({
   const [rangeError, setRangeError] = useState<string | null>(null);
   const [showTwoMonths, setShowTwoMonths] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const resourceId = resource?.id;
 
   const {
     register,
@@ -98,35 +98,19 @@ export function ReservationRequestDialog({
   }, []);
 
   const reservationsQuery = useQuery({
-    queryKey: ["reservations", "resource", resource?.id],
-    queryFn: () => api.reservations.byResource(Number(resource!.id)),
-    enabled: open && !!resource?.id,
+    queryKey: ["reservations", "resource", resourceId],
+    queryFn: () => api.reservations.byResource(Number(resourceId)),
+    enabled: open && !!resourceId,
   });
-
-  const blockingReservations = useMemo(
-    () =>
-      (reservationsQuery.data ?? []).filter((reservation) =>
-        ["APPROVED", "ACTIVE", "OVERDUE"].includes(reservation.status),
-      ),
-    [reservationsQuery.data],
-  );
 
   const disabledDates = useMemo(() => {
     if (!resource) return [];
-
-    const list: Date[] = [];
-    for (let offset = 0; offset < 120; offset += 1) {
-      const day = addDays(today, offset);
-      const concurrentReservations = blockingReservations.filter((reservation) =>
-        overlapsDay(day, reservation),
-      ).length;
-
-      if (concurrentReservations >= resource.quantity) {
-        list.push(day);
-      }
+    if (resource.quantity <= 0) {
+      return Array.from({ length: 120 }, (_, offset) => addDays(today, offset));
     }
-    return list;
-  }, [blockingReservations, resource, today]);
+
+    return buildFullyBookedDates(resource, reservationsQuery.data ?? [], today);
+  }, [resource, reservationsQuery.data, today]);
 
   /** Inclusive calendar days from start through end (used for API + availability overlap). */
   const calendarHoldDays = useMemo(() => {
@@ -260,6 +244,7 @@ export function ReservationRequestDialog({
       toast.success("Reservation request sent for admin approval.");
       qc.invalidateQueries({ queryKey: ["resources"] });
       qc.invalidateQueries({ queryKey: ["reservations"] });
+      qc.invalidateQueries({ queryKey: ["reservations", "resource", resource?.id] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       onOpenChange(false);
     },
@@ -308,9 +293,6 @@ export function ReservationRequestDialog({
                           ? `${resource.assetCode} - ${resource.type}`
                           : "Open a resource first"}
                       </p>
-                    </div>
-                    <div className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      {resource?.quantity ?? 0} free
                     </div>
                   </div>
                 </div>
@@ -450,7 +432,6 @@ export function ReservationRequestDialog({
                 disabled={
                   mut.isPending ||
                   selectionBlocked ||
-                  reservationsQuery.isLoading ||
                   !selectedRange?.from ||
                   !selectedRange?.to ||
                   !!rangeError
@@ -516,12 +497,6 @@ function rangeIntervalIncludesBlockedOrTooEarlyDay(
   );
 }
 
-function overlapsDay(day: Date, reservation: Reservation) {
-  const reservationStart = parseISO(reservation.startDate);
-  const reservationEnd = addDays(reservationStart, reservation.durationDays - 1);
-  return !isBefore(day, reservationStart) && !isBefore(reservationEnd, day);
-}
-
 function selectedRangeHasConflict(range: DateRange, disabledDates: Date[]) {
   if (!range.from || !range.to) return false;
 
@@ -529,4 +504,34 @@ function selectedRangeHasConflict(range: DateRange, disabledDates: Date[]) {
   return requestedDates.some((date) =>
     disabledDates.some((disabledDate) => isEqual(disabledDate, date)),
   );
+}
+
+function buildFullyBookedDates(resource: Resource, reservations: Reservation[], today: Date) {
+  const capacity = Math.max(0, Number(resource.quantity ?? 0));
+  if (capacity === 0) {
+    return Array.from({ length: 120 }, (_, offset) => addDays(today, offset));
+  }
+
+  // Pending requests stay selectable; only confirmed reservations make a date fully booked.
+  const confirmedReservations = reservations.filter((reservation) =>
+    ["APPROVED", "ACTIVE", "OVERDUE"].includes(reservation.status),
+  );
+
+  return Array.from({ length: 120 }, (_, offset) => addDays(today, offset)).filter((day) => {
+    const usedUnits = confirmedReservations.filter((reservation) =>
+      reservationIncludesDay(reservation, day),
+    ).length;
+    return usedUnits >= capacity;
+  });
+}
+
+function reservationIncludesDay(reservation: Reservation, day: Date) {
+  const start = parseLocalDate(reservation.startDate);
+  const end = parseLocalDate(reservation.expectedReturnDate ?? reservation.endDate);
+  return !isBefore(day, start) && !isAfter(day, end);
+}
+
+function parseLocalDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }

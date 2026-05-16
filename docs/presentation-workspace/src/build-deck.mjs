@@ -171,7 +171,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
         column(
           { name: "cover-stack", width: fill, height: hug, gap: 28, alignSelf: "center" },
           [
-            text("Campus Resourcely", {
+            text("TEK-UP Resourcely", {
               name: "cover-title",
               width: wrap(1100),
               height: hug,
@@ -179,7 +179,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
             }),
             rule({ name: "cover-rule", width: fixed(220), stroke: palette.coral, weight: 5 }),
             text(
-              "A campus equipment reservation platform with approval workflow, scheduling, notifications, and layered Spring Boot architecture.",
+              "A TEK-UP equipment reservation platform with approval workflow, scheduling, notifications, and layered Spring Boot architecture.",
               {
                 name: "cover-subtitle",
                 width: wrap(1280),
@@ -227,7 +227,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
               height: hug,
               style: titleStyle,
             }),
-            text("Universities share expensive resources, but manual borrowing creates stock confusion, late returns, and weak traceability.", {
+            text("Universities share expensive resources, but manual borrowing creates date conflicts, late returns, and weak traceability.", {
               name: "problem-subtitle",
               width: wrap(1350),
               height: hug,
@@ -241,7 +241,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           [
             "Students request cameras, projectors, and embedded kits through a dedicated portal.",
             "Admins review and approve requests instead of giving equipment immediately.",
-            "The backend tracks stock, due dates, returns, and overdue cases.",
+            "The backend tracks date capacity, due dates, returns, and overdue cases.",
           ],
         ),
         infoCard(
@@ -250,7 +250,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           [
             "Two roles: student and administrator.",
             "Reservation lifecycle with approval logic.",
-            "Scheduled notifications before and after deadlines.",
+            "Notifications for requests, approvals, rejections, and deadlines.",
             "Separation between API contract and persistence model.",
           ],
           { fillColor: palette.paper },
@@ -421,7 +421,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           "ResourceTag",
           "Many-to-many tag mapping",
           "Asset code uniqueness",
-          "Quantity represents available stock",
+          "Quantity represents total capacity",
         ], { fillColor: palette.mist }),
         infoCard("entity-flow", "Process side", [
           "Reservation",
@@ -539,13 +539,14 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           "Request starts as PENDING",
           "Student must reserve at least 2 days ahead",
           "Start and end dates must be weekdays",
-          "Reservation cannot exceed 7 weekdays",
+          "Pending requests do not consume capacity yet",
         ]),
         infoCard("workflow-admin", "Admin approval", [
           "Approve pending request",
+          "Capacity is checked again for the selected dates",
           "APPROVED if start date is in the future",
           "ACTIVE if start date is today",
-          "Stock is decremented only when active",
+          "Overflow requests are rejected and students are notified",
         ], { fillColor: palette.mist }),
         infoCard("workflow-return", "Return and overdue", [
           "RETURNED when admin confirms return",
@@ -590,6 +591,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           "@EnableScheduling activates the cron system.",
           "@Scheduled(cron = \"0 0 8 * * *\") sends due-soon reminders every morning.",
           "ApplicationReadyEvent also seeds reminders at startup for the demo.",
+          "ReservationService creates request, approval, and rejection notifications immediately.",
           "Admins can send manual overdue alerts to students.",
         ], { fillColor: "#F6FBFF" }),
         infoCard("exception-card", "Validation and errors", [
@@ -633,9 +635,9 @@ const presentation = Presentation.create({ slideSize: SLIDE });
         ),
         bulletBlock([
           "CampusResourceHubBackendApplication.java: startup, property scanning, scheduling.",
-          "ReservationService.java: main business logic for reservation creation, approval, status refresh, and stock rules.",
-          "NotificationService.java: automatic reminders and manual overdue alerts.",
-          "StudentService.java: student CRUD, login, and profile mapping.",
+          "ReservationService.java: main business logic for reservation creation, approval, status refresh, and capacity rules.",
+          "NotificationService.java: request, approval, rejection, reminder, and overdue alerts.",
+          "AuthService.java and SecurityConfig.java: JWT login and role-based access control.",
           "GlobalExceptionHandler.java: centralized API error responses.",
         ], false, "files-left"),
         bulletBlock([
@@ -721,7 +723,7 @@ const presentation = Presentation.create({ slideSize: SLIDE });
           "Layered architecture: controller, service, repository, DTO, entity, exception.",
           "JPA entity relationships that reflect a real reservation domain.",
           "Business-rule implementation beyond CRUD.",
-          "Validation, scheduling, notifications, and stock control.",
+          "Validation, scheduling, notifications, and date-capacity control.",
           "A backend designed to support a separated frontend through REST APIs.",
         ], true, "closing-bullets"),
       ],

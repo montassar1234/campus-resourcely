@@ -11,6 +11,9 @@ import {
   CornerDownLeft,
   Send,
   CheckCheck,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Reservation, ReservationStatus, Resource, Student } from "@/lib/types";
@@ -54,12 +57,16 @@ const STATUSES: (ReservationStatus | "ALL")[] = [
   "OVERDUE",
 ];
 const PAGE_SIZE = 8;
+type SortKey = "startDate" | "endDate" | "status" | "studentName" | "resourceName";
+type SortDirection = "asc" | "desc";
 
 export function ReservationsPage() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<ReservationStatus | "ALL">("ALL");
   const [studentFilter, setStudentFilter] = useState<string>("ALL");
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("startDate");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
@@ -86,8 +93,9 @@ export function ReservationsPage() {
           reservation.studentName.toLowerCase().includes(q),
       );
     }
-    return list;
-  }, [reservations, studentFilter, search]);
+    // Sorting is done after filtering so the table header order always matches what is visible.
+    return [...list].sort((a, b) => compareReservations(a, b, sortKey, sortDirection));
+  }, [reservations, studentFilter, search, sortKey, sortDirection]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginatedReservations = useMemo(() => {
@@ -97,7 +105,7 @@ export function ReservationsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, studentFilter, search]);
+  }, [statusFilter, studentFilter, search, sortKey, sortDirection]);
 
   useEffect(() => {
     setPage((currentPage) => Math.min(currentPage, totalPages));
@@ -108,17 +116,23 @@ export function ReservationsPage() {
     onSuccess: () => {
       toast.success("Marked as returned");
       qc.invalidateQueries({ queryKey: ["reservations"] });
+      qc.invalidateQueries({ queryKey: ["resources"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
   const approveMut = useMutation({
     mutationFn: (id: number) => api.reservations.approve(id),
-    onSuccess: () => {
-      toast.success("Reservation approved");
+    onSuccess: (reservation) => {
+      if (reservation.status === "REJECTED") {
+        toast.error("Reservation rejected because the selected dates are no longer available");
+      } else {
+        toast.success("Reservation approved");
+      }
       qc.invalidateQueries({ queryKey: ["reservations"] });
       qc.invalidateQueries({ queryKey: ["resources"] });
       qc.invalidateQueries({ queryKey: ["resources", "available"] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -129,6 +143,8 @@ export function ReservationsPage() {
     onSuccess: () => {
       toast.success("Reservation deleted");
       qc.invalidateQueries({ queryKey: ["reservations"] });
+      qc.invalidateQueries({ queryKey: ["resources"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -210,11 +226,41 @@ export function ReservationsPage() {
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
           <div className="hidden grid-cols-[1.8fr_1.4fr_1fr_1fr_1fr_auto] gap-4 border-b border-border bg-secondary/50 px-6 py-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground md:grid">
-            <div>Resource</div>
-            <div>Student</div>
-            <div>Start</div>
-            <div>End / Return</div>
-            <div>Status</div>
+            <SortableHeader
+              label="Resource"
+              sortValue="resourceName"
+              activeSort={sortKey}
+              direction={sortDirection}
+              onSort={(value) => handleSort(value)}
+            />
+            <SortableHeader
+              label="Student"
+              sortValue="studentName"
+              activeSort={sortKey}
+              direction={sortDirection}
+              onSort={(value) => handleSort(value)}
+            />
+            <SortableHeader
+              label="Start"
+              sortValue="startDate"
+              activeSort={sortKey}
+              direction={sortDirection}
+              onSort={(value) => handleSort(value)}
+            />
+            <SortableHeader
+              label="End / Return"
+              sortValue="endDate"
+              activeSort={sortKey}
+              direction={sortDirection}
+              onSort={(value) => handleSort(value)}
+            />
+            <SortableHeader
+              label="Status"
+              sortValue="status"
+              activeSort={sortKey}
+              direction={sortDirection}
+              onSort={(value) => handleSort(value)}
+            />
             <div></div>
           </div>
           <div className="divide-y divide-border">
@@ -266,6 +312,69 @@ export function ReservationsPage() {
       />
     </PageShell>
   );
+
+  function handleSort(value: SortKey) {
+    if (sortKey === value) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setSortKey(value);
+    setSortDirection(value === "startDate" || value === "endDate" ? "desc" : "asc");
+  }
+}
+
+function SortableHeader({
+  label,
+  sortValue,
+  activeSort,
+  direction,
+  onSort,
+}: {
+  label: string;
+  sortValue: SortKey;
+  activeSort: SortKey;
+  direction: SortDirection;
+  onSort: (value: SortKey) => void;
+}) {
+  const active = activeSort === sortValue;
+  const Icon = !active ? ArrowUpDown : direction === "asc" ? ArrowUp : ArrowDown;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(sortValue)}
+      className={`inline-flex w-fit items-center gap-1.5 rounded-md text-left transition hover:text-foreground ${
+        active ? "text-foreground" : ""
+      }`}
+    >
+      {label}
+      <Icon className="h-3 w-3" />
+    </button>
+  );
+}
+
+function compareReservations(
+  a: Reservation,
+  b: Reservation,
+  sortKey: SortKey,
+  direction: SortDirection,
+) {
+  const factor = direction === "asc" ? 1 : -1;
+  const aValue = reservationSortValue(a, sortKey);
+  const bValue = reservationSortValue(b, sortKey);
+
+  if (typeof aValue === "number" && typeof bValue === "number") {
+    return (aValue - bValue) * factor;
+  }
+  return String(aValue).localeCompare(String(bValue)) * factor;
+}
+
+function reservationSortValue(reservation: Reservation, sortKey: SortKey) {
+  if (sortKey === "startDate") return new Date(reservation.startDate).getTime();
+  if (sortKey === "endDate") {
+    return new Date(reservation.expectedReturnDate ?? reservation.endDate).getTime();
+  }
+  return reservation[sortKey].toLowerCase();
 }
 
 function ReservationRow({
@@ -387,6 +496,7 @@ function NewReservationDialog({
     onSuccess: () => {
       toast.success("Reservation created");
       qc.invalidateQueries({ queryKey: ["reservations"] });
+      qc.invalidateQueries({ queryKey: ["resources"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
       onOpenChange(false);
       reset();

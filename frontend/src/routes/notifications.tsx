@@ -6,7 +6,7 @@ import { NotificationsPanel } from "@/components/NotificationsPanel";
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Notifications - Campus Resource Hub" },
+      { title: "Notifications - TEK-UP Resource Hub" },
       {
         name: "description",
         content: "View reminders and return alerts for your borrowed equipment.",

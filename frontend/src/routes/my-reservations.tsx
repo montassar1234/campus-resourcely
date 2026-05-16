@@ -10,7 +10,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 export const Route = createFileRoute("/my-reservations")({
   head: () => ({
     meta: [
-      { title: "My Reservations - Campus Resource Hub" },
+      { title: "My Reservations - TEK-UP Resource Hub" },
       {
         name: "description",
         content: "View the status of your equipment reservation requests.",

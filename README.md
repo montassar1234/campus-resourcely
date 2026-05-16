@@ -1,6 +1,6 @@
-# Campus Resourcely
+# TEK-UP Resourcely
 
-Campus Resourcely is a full-stack university equipment reservation platform built for academic presentation and portfolio use. It focuses on a realistic reservation workflow instead of a generic CRUD demo: students request equipment, administrators review and approve requests, reservation states evolve over time, stock is tracked, and notifications remind students before and after the deadline.
+TEK-UP Resourcely is a full-stack university equipment reservation platform built for academic presentation and portfolio use. It focuses on a realistic reservation workflow instead of a generic CRUD demo: students request equipment, administrators review and approve requests, reservation states evolve over time, date capacity is checked, and notifications keep both roles informed.
 
 The project is a **monorepo** with:
 
@@ -13,7 +13,7 @@ campus-resourcely/
 
 ## Project Goal
 
-The system solves a practical campus problem: shared resources such as cameras, projectors, and embedded kits are often managed manually. This project digitizes the process with:
+The system solves a practical TEK-UP problem: shared resources such as cameras, projectors, and embedded kits are often managed manually. This project digitizes the process with:
 
 - a student portal for browsing and requesting equipment
 - an admin portal for validation and management
@@ -24,9 +24,10 @@ The system solves a practical campus problem: shared resources such as cameras, 
 
 - Separate student and admin experiences
 - Reservation lifecycle with `PENDING`, `APPROVED`, `ACTIVE`, `RETURNED`, `OVERDUE`, and `REJECTED`
-- Stock-aware booking rules
+- Date-capacity booking rules
 - Calendar-based reservation requests
-- Scheduled notifications with Spring `@Scheduled`
+- Admin and student notifications for requests, approvals, rejections, and returns
+- Scheduled reminders with Spring `@Scheduled`
 - Layered Spring Boot architecture using controller, service, repository, DTO, entity, and exception layers
 - Clean frontend/backend separation through REST APIs
 
@@ -86,6 +87,7 @@ Important note: the current frontend in this repository is **React**, while the 
 
 ### Documentation
 
+- `docs/Campus-Resourcely-Spring-Boot-Defense.pptx`
 - `docs/presentation-workspace/output/output.pptx`
 - `docs/spring-boot-defense.md`
 
@@ -188,8 +190,11 @@ Important business rules implemented there:
 - student requests must start and end on weekdays
 - student requests cannot exceed `7` weekdays
 - admin-created reservations can use up to `31` calendar days
-- resource stock is decremented only when a reservation becomes active
-- reservations cannot overlap beyond total capacity
+- resource quantity represents total capacity, not a live counter of units left today
+- confirmed reservations consume capacity only for their selected dates
+- pending student requests do not block dates until an admin approves them
+- overlapping reservations cannot exceed total capacity for the same resource
+- overflow pending requests are rejected automatically when capacity is filled
 - overdue reservations are refreshed dynamically
 
 ### 7. Controller Layer
@@ -228,24 +233,28 @@ This is the most important business flow in the project.
 
 1. Student chooses equipment and a calendar range in the frontend.
 2. Frontend sends `POST /api/reservations/request/student` with the student's JWT.
-3. Backend validates dates, weekday rules, and resource availability.
+3. Backend validates date rules and student limits.
 4. A reservation is created with status `PENDING`.
+5. The admin receives a notification about the new request.
 
 ### Admin approval
 
 1. Admin reviews pending requests.
 2. Admin approves through `PUT /api/reservations/{id}/approve`.
-3. Backend converts the request to:
+3. Backend checks capacity again for the selected date range.
+4. If capacity is available, the backend converts the request to:
    - `APPROVED` if the start date is still in the future
    - `ACTIVE` if the start date is today
-4. Stock is decremented only when the reservation is active.
+5. The student receives an approval notification.
+6. If capacity is no longer available, the request becomes `REJECTED` and the student is notified.
+7. Any other pending requests that now exceed capacity are automatically rejected.
 
 ### Return flow
 
 1. Admin marks the reservation as returned.
 2. Backend sets `actualReturnDate`.
 3. Status becomes `RETURNED`.
-4. Stock is incremented again.
+4. Quantity is not changed, because quantity is total resource capacity. Availability is calculated from overlapping confirmed reservations.
 
 ### Overdue logic
 
@@ -264,6 +273,8 @@ The notification feature is implemented in:
 Supported use cases:
 
 - automatic return reminders during the last 2 days before the deadline
+- admin notifications when students submit reservation requests
+- student notifications when requests are approved or rejected
 - manual admin alerts for overdue reservations
 - read / unread tracking
 
@@ -290,6 +301,8 @@ It seeds:
 
 This makes the app ready to present immediately after startup.
 
+Demo student phone numbers use the Tunisian `+216` format so the seed data matches the TEK-UP context.
+
 ## Demo Accounts
 
 ### Admin
@@ -299,12 +312,12 @@ This makes the app ready to present immediately after startup.
 
 ### Students
 
-- `aminah@campus.edu` / `aminah123`
-- `david@campus.edu` / `david123`
-- `m.benali@campus.edu` / `student123`
-- `y.ahyaoui@campus.edu` / `student123`
-- `s.khider@campus.edu` / `student123`
-- `n.mansouri@campus.edu` / `student123`
+- `aminah@tek-up.tn` / `aminah123`
+- `david@tek-up.tn` / `david123`
+- `m.benali@tek-up.tn` / `student123`
+- `y.ahyaoui@tek-up.tn` / `student123`
+- `s.khider@tek-up.tn` / `student123`
+- `n.mansouri@tek-up.tn` / `student123`
 
 ## Main API Areas
 
@@ -317,9 +330,13 @@ This makes the app ready to present immediately after startup.
 - `POST /api/reservations`
 - `POST /api/reservations/request`
 - `POST /api/reservations/request/student`
+- `GET /api/reservations/resource/{resourceId}`
 - `PUT /api/reservations/{id}/approve`
 - `PUT /api/reservations/{id}/return`
+- `DELETE /api/reservations/{id}`
+- `GET /api/notifications/admin`
 - `GET /api/notifications/student/{studentId}`
+- `PUT /api/notifications/admin/read-all`
 
 ## Local Development
 
@@ -386,7 +403,7 @@ cmd /c npm.cmd run build
 
 Short version:
 
-“Campus Resourcely is a campus equipment reservation platform. Spring Boot is used as a REST backend with layered architecture: controllers expose endpoints, services contain the business rules, repositories access data through JPA, DTOs protect the API contract, and scheduled notifications automate reminder logic. The frontend is separated from the backend and consumes the API as a single-page application.”
+“TEK-UP Resourcely is a TEK-UP equipment reservation platform. Spring Boot is used as a REST backend with layered architecture: controllers expose endpoints, services contain the business rules, repositories access data through JPA, DTOs protect the API contract, and notifications automate the request, approval, rejection, and reminder workflow. The frontend is separated from the backend and consumes the API as a single-page application.”
 
 ## Current Limits
 

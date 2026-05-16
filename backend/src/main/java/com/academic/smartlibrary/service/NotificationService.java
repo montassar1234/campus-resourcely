@@ -34,7 +34,19 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public List<NotificationResponse> findByStudent(Long studentId) {
-        return notificationRepository.findByStudentIdOrderByCreatedAtDesc(studentId).stream()
+        // Request notifications are for admins, even though they are linked to the requesting student.
+        return notificationRepository.findByStudentIdAndTypeNotOrderByCreatedAtDesc(
+                        studentId,
+                        NotificationType.RESERVATION_REQUESTED
+                ).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> findAdminNotifications() {
+        // The admin feed is type-based because reservation requests can come from any student.
+        return notificationRepository.findByTypeOrderByCreatedAtDesc(NotificationType.RESERVATION_REQUESTED).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -49,7 +61,80 @@ public class NotificationService {
 
     @Transactional
     public int markAllAsRead(Long studentId) {
-        return notificationRepository.markAllAsReadByStudentId(studentId);
+        return notificationRepository.markAllAsReadByStudentId(studentId, NotificationType.RESERVATION_REQUESTED);
+    }
+
+    @Transactional
+    public int markAllAdminAsRead() {
+        return notificationRepository.markAllAsReadByType(NotificationType.RESERVATION_REQUESTED);
+    }
+
+    @Transactional
+    public int deleteForReservation(Long reservationId) {
+        return notificationRepository.deleteByReservationId(reservationId);
+    }
+
+    @Transactional
+    public void notifyAdminReservationRequested(Reservation reservation) {
+        if (notificationRepository.existsByReservationIdAndType(
+                reservation.getId(),
+                NotificationType.RESERVATION_REQUESTED
+        )) {
+            return;
+        }
+
+        Notification notification = Notification.builder()
+                .student(reservation.getStudent())
+                .reservation(reservation)
+                .type(NotificationType.RESERVATION_REQUESTED)
+                .message(buildReservationRequestedMessage(reservation))
+                .notificationDate(LocalDate.now())
+                .createdAt(LocalDateTime.now())
+                .read(false)
+                .build();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void notifyStudentReservationApproved(Reservation reservation) {
+        if (notificationRepository.existsByReservationIdAndType(
+                reservation.getId(),
+                NotificationType.RESERVATION_APPROVED
+        )) {
+            return;
+        }
+
+        Notification notification = Notification.builder()
+                .student(reservation.getStudent())
+                .reservation(reservation)
+                .type(NotificationType.RESERVATION_APPROVED)
+                .message(buildReservationApprovedMessage(reservation))
+                .notificationDate(LocalDate.now())
+                .createdAt(LocalDateTime.now())
+                .read(false)
+                .build();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void notifyStudentReservationRejected(Reservation reservation) {
+        if (notificationRepository.existsByReservationIdAndType(
+                reservation.getId(),
+                NotificationType.RESERVATION_REJECTED
+        )) {
+            return;
+        }
+
+        Notification notification = Notification.builder()
+                .student(reservation.getStudent())
+                .reservation(reservation)
+                .type(NotificationType.RESERVATION_REJECTED)
+                .message(buildReservationRejectedMessage(reservation))
+                .notificationDate(LocalDate.now())
+                .createdAt(LocalDateTime.now())
+                .read(false)
+                .build();
+        notificationRepository.save(notification);
     }
 
     @Transactional
@@ -148,6 +233,30 @@ public class NotificationService {
     private String defaultAdminAlertMessage(Reservation reservation) {
         return "Urgent return required: please bring back " + reservation.getResource().getName()
                 + " as soon as possible because the borrowing deadline has passed.";
+    }
+
+    private String buildReservationRequestedMessage(Reservation reservation) {
+        return reservation.getStudent().getProfile().getFullName()
+                + " requested " + reservation.getResource().getName()
+                + " for " + reservation.getStartDate() + ".";
+    }
+
+    private String buildReservationApprovedMessage(Reservation reservation) {
+        return "Approved: your reservation for " + reservation.getResource().getName()
+                + " was accepted. Pickup is scheduled for " + reservation.getStartDate() + ".";
+    }
+
+    private String buildReservationRejectedMessage(Reservation reservation) {
+        return "Rejected: " + reservation.getResource().getName()
+                + " is no longer available for " + reservation.getStartDate()
+                + " to " + endDateInclusive(reservation) + ". Please choose another date.";
+    }
+
+    private LocalDate endDateInclusive(Reservation reservation) {
+        if (reservation.getStartDate() == null || reservation.getDurationDays() == null) {
+            return reservation.getStartDate();
+        }
+        return reservation.getStartDate().plusDays(reservation.getDurationDays() - 1L);
     }
 
     private NotificationResponse toResponse(Notification notification) {

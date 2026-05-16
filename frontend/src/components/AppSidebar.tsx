@@ -59,7 +59,7 @@ export function AppSidebar() {
               Resource Hub
             </span>
             <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/60">
-              Campus
+              TEK-UP
             </span>
           </div>
         </Link>
@@ -101,7 +101,7 @@ export function AppSidebar() {
               {isAdmin ? admin?.username || "Admin Staff" : student?.fullName || "Student"}
             </span>
             <span className="text-[10px] text-sidebar-foreground/60">
-              {isAdmin ? "admin@campus.edu" : student?.email || "student@campus.edu"}
+              {isAdmin ? "admin@tek-up.tn" : student?.email || "student@tek-up.tn"}
             </span>
           </div>
         </div>
