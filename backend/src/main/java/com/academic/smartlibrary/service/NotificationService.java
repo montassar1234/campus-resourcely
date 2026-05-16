@@ -76,6 +76,7 @@ public class NotificationService {
 
     @Transactional
     public void notifyAdminReservationRequested(Reservation reservation) {
+        // One request should create only one admin notification, even if the endpoint is retried.
         if (notificationRepository.existsByReservationIdAndType(
                 reservation.getId(),
                 NotificationType.RESERVATION_REQUESTED
@@ -142,6 +143,7 @@ public class NotificationService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation with id " + reservationId + " not found"));
 
+        // Manual alerts are reserved for real overdue cases, not future or pending requests.
         if (reservation.getStatus() == ReservationStatus.PENDING
                 || reservation.getStatus() == ReservationStatus.APPROVED
                 || reservation.getActualReturnDate() != null
@@ -183,6 +185,7 @@ public class NotificationService {
 
     @Transactional
     public void createAutomaticReminders(LocalDate today) {
+        // Only active overdue/borrowed reservations receive due-soon reminders.
         List<Reservation> reservations = reservationRepository.findAll().stream()
                 .filter(reservation -> reservation.getActualReturnDate() == null)
                 .filter(reservation -> reservation.getStatus() != ReservationStatus.RETURNED)
@@ -206,6 +209,7 @@ public class NotificationService {
                 continue;
             }
 
+            // The date check prevents duplicated reminders when the scheduler runs again the same day.
             long daysRemaining = ChronoUnit.DAYS.between(today, reservation.getExpectedReturnDate());
             Notification notification = Notification.builder()
                     .student(reservation.getStudent())

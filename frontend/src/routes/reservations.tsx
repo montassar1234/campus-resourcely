@@ -337,6 +337,7 @@ function SortableHeader({
   onSort: (value: SortKey) => void;
 }) {
   const active = activeSort === sortValue;
+  // The icon makes table sorting visible without adding another filter control.
   const Icon = !active ? ArrowUpDown : direction === "asc" ? ArrowUp : ArrowDown;
 
   return (
@@ -372,6 +373,7 @@ function compareReservations(
 function reservationSortValue(reservation: Reservation, sortKey: SortKey) {
   if (sortKey === "startDate") return new Date(reservation.startDate).getTime();
   if (sortKey === "endDate") {
+    // Approved reservations use expectedReturnDate; pending requests still have the calculated endDate.
     return new Date(reservation.expectedReturnDate ?? reservation.endDate).getTime();
   }
   return reservation[sortKey].toLowerCase();

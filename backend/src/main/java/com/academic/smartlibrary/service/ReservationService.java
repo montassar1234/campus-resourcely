@@ -43,6 +43,7 @@ public class ReservationService {
     }
 
     public List<ReservationResponse> findAll() {
+        // Statuses are recalculated before reads so the UI stays correct even after the app was closed.
         refreshStatuses();
         return reservationRepository.findAll().stream()
                 .map(this::toResponse)
@@ -103,6 +104,7 @@ public class ReservationService {
     private ReservationResponse createAdminReservation(Student student, Resource resource, LocalDate startDate, Integer durationDays, String purpose) {
         int effectiveBorrowDays = effectiveDuration(durationDays);
         LocalDate normalizedStartDate = normalizeRequestedStartDate(startDate);
+        // Admin-created reservations are confirmed immediately, so they must fit the calendar now.
         ensureAvailability(resource, normalizedStartDate, effectiveBorrowDays, null);
         LocalDate endDateInclusive = endDateInclusive(normalizedStartDate, effectiveBorrowDays);
 
@@ -209,6 +211,7 @@ public class ReservationService {
                 continue;
             }
             if (reservation.getStatus() == ReservationStatus.PENDING) {
+                // A pending request that reaches its start date was never approved, so it expires.
                 if (reservation.getStartDate() != null && !reservation.getStartDate().isAfter(today)) {
                     reservation.setStatus(ReservationStatus.REJECTED);
                 }
@@ -260,6 +263,7 @@ public class ReservationService {
         }
         LocalDate endInclusive = endDateInclusive(startDate, durationDays);
         int weekdays = 0;
+        // Weekends can be inside the selected range, but they do not count against the 7-day student limit.
         for (LocalDate d = startDate; !d.isAfter(endInclusive); d = d.plusDays(1)) {
             DayOfWeek dow = d.getDayOfWeek();
             if (dow != DayOfWeek.SATURDAY && dow != DayOfWeek.SUNDAY) {
@@ -332,6 +336,7 @@ public class ReservationService {
     }
 
     private boolean blocksAvailability(Reservation reservation) {
+        // Pending requests do not block the calendar because the admin may reject them later.
         return reservation.getStatus() == ReservationStatus.APPROVED
                 || reservation.getStatus() == ReservationStatus.ACTIVE
                 || reservation.getStatus() == ReservationStatus.OVERDUE;

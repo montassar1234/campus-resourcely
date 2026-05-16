@@ -31,6 +31,7 @@ public class NotificationController {
 
     @GetMapping("/admin")
     public ResponseEntity<List<NotificationResponse>> getAdminNotifications() {
+        // Admin notifications are kept separate from the student's personal feed.
         return ResponseEntity.ok(notificationService.findAdminNotifications());
     }
 
@@ -47,6 +48,7 @@ public class NotificationController {
 
     @PutMapping("/admin/read-all")
     public ResponseEntity<Void> markAllAdminAsRead() {
+        // This marks request notifications for the admin dashboard, not all student alerts.
         notificationService.markAllAdminAsRead();
         return ResponseEntity.noContent().build();
     }

@@ -157,10 +157,7 @@ public class DataSeeder {
 
             studentRepository.saveAll(List.of(aminah, david, meriem, yassine, sara, nour));
 
-            arduinoBox.setQuantity(arduinoBox.getQuantity() - 1);
-            projector.setQuantity(projector.getQuantity() - 1);
-            resourceRepository.saveAll(List.of(arduinoBox, projector));
-
+            // Resource quantity is total capacity. Demo reservations below do not reduce it.
             Reservation activeReservation = Reservation.builder()
                     .student(aminah)
                     .resource(arduinoBox)

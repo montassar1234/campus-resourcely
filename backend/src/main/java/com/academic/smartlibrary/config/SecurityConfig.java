@@ -36,9 +36,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/resources", "/api/resources/**").hasAnyRole("ADMIN", "STUDENT")
                         .requestMatchers("/api/reservations/request", "/api/reservations/request/**").permitAll()
+                        // Students need these read endpoints to show their history and the borrow calendar.
                         .requestMatchers(HttpMethod.GET, "/api/reservations/student/**").hasAnyRole("ADMIN", "STUDENT")
                         .requestMatchers(HttpMethod.GET, "/api/reservations/resource/**").hasAnyRole("ADMIN", "STUDENT")
                         .requestMatchers("/api/notifications/student/**").hasAnyRole("ADMIN", "STUDENT")
+                        // Everything below is admin-only management.
                         .requestMatchers("/api/dashboard/**", "/api/students/**", "/api/tags/**", "/api/reservations/**", "/api/notifications/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

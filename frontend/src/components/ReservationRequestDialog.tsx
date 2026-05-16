@@ -109,6 +109,7 @@ export function ReservationRequestDialog({
       return Array.from({ length: 120 }, (_, offset) => addDays(today, offset));
     }
 
+    // The backend is still the authority; this only guides the student before submitting.
     return buildFullyBookedDates(resource, reservationsQuery.data ?? [], today);
   }, [resource, reservationsQuery.data, today]);
 
@@ -500,6 +501,7 @@ function rangeIntervalIncludesBlockedOrTooEarlyDay(
 function selectedRangeHasConflict(range: DateRange, disabledDates: Date[]) {
   if (!range.from || !range.to) return false;
 
+  // A range is invalid if even one day inside it is fully booked.
   const requestedDates = eachDayOfInterval({ start: range.from, end: range.to });
   return requestedDates.some((date) =>
     disabledDates.some((disabledDate) => isEqual(disabledDate, date)),
