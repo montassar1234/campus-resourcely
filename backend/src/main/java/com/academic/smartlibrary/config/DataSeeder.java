@@ -126,8 +126,8 @@ public class DataSeeder {
                     .profile(StudentProfile.builder()
                             .fullName("Yassine Ahyaoui")
                             .phone("+21625100104")
-                            .department("SDIA")
-                            .level("ING-3-J-SDIA-A")
+                            .department("Tronc Commun")
+                            .level("ING-3-J-A")
                             .build())
                     .build();
 
@@ -138,8 +138,8 @@ public class DataSeeder {
                     .profile(StudentProfile.builder()
                             .fullName("Sara Khider")
                             .phone("+21627100105")
-                            .department("GL")
-                            .level("ING-3-S-GL-A")
+                            .department("Tronc Commun")
+                            .level("ING-3-S-A")
                             .build())
                     .build();
 
@@ -174,8 +174,8 @@ public class DataSeeder {
                     .profile(StudentProfile.builder()
                             .fullName("Aziz Gharbi")
                             .phone("+21650100108")
-                            .department("CYBER")
-                            .level("ING-3-S-CYBER-B")
+                            .department("Tronc Commun")
+                            .level("ING-3-S-B")
                             .build())
                     .build();
 

@@ -304,13 +304,13 @@ function StudentFormDialog({
             <Field label="Department" error={errors.department?.message}>
               <Input
                 {...register("department", { required: "Required" })}
-                placeholder="e.g. SDIA, GL, CYBER"
+                placeholder="e.g. Tronc Commun, SDIA, GL, CYBER"
               />
             </Field>
             <Field label="Level" error={errors.level?.message}>
               <Input
                 {...register("level", { required: "Required" })}
-                placeholder="e.g. ING-4-S-SDIA-B"
+                placeholder="e.g. ING-3-S-A or ING-4-S-SDIA-B"
               />
             </Field>
           </div>

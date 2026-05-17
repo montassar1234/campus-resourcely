@@ -322,9 +322,10 @@ Demo student phone numbers use the Tunisian `+216` format so the seed data match
 - `a.gharbi@tek-up.tn` / `student123`
 - `l.saidi@tek-up.tn` / `student123`
 
-Student profile levels follow the TEK-UP format `ING-year-schedule-branch-group`.
+Student profile levels follow the TEK-UP format `ING-year-schedule-branch-group` from year 4.
 For example, `ING-4-S-SDIA-B` means engineering year 4, evening classes, SDIA branch, group B.
-The demo branches are `SDIA`, `GL`, and `CYBER`.
+In year 3, students are still in common core, so the format is `ING-3-schedule-group`, for example `ING-3-S-A`.
+The demo specializations from year 4 are `SDIA`, `GL`, and `CYBER`.
 
 ## Main API Areas
 
