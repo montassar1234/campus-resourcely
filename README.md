@@ -292,9 +292,9 @@ The demo data is created in:
 
 It seeds:
 
-- 4 resource tags
-- 3 equipment resources
-- 6 student accounts
+- 7 resource tags
+- 8 equipment resources
+- 9 student accounts
 - 1 active reservation
 - 1 overdue reservation
 - 1 pending reservation

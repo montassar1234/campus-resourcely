@@ -58,6 +58,9 @@ public class DataSeeder {
             ResourceTag media = resourceTagRepository.save(ResourceTag.builder().name("Media Lab").build());
             ResourceTag iot = resourceTagRepository.save(ResourceTag.builder().name("IoT").build());
             ResourceTag collaboration = resourceTagRepository.save(ResourceTag.builder().name("Team Work").build());
+            ResourceTag dataScience = resourceTagRepository.save(ResourceTag.builder().name("Data Science").build());
+            ResourceTag cybersecurity = resourceTagRepository.save(ResourceTag.builder().name("Cybersecurity").build());
+            ResourceTag softwareLab = resourceTagRepository.save(ResourceTag.builder().name("Software Lab").build());
 
             Resource cameraKit = Resource.builder()
                     .name("Canon Content Creator Kit")
@@ -83,7 +86,56 @@ public class DataSeeder {
                     .tags(Set.of(media, collaboration))
                     .build();
 
-            resourceRepository.saveAll(List.of(cameraKit, arduinoBox, projector));
+            Resource raspberryPiCluster = Resource.builder()
+                    .name("Raspberry Pi Edge Computing Kit")
+                    .type("Embedded Kit")
+                    .assetCode("IOT-2026-04")
+                    .quantity(4)
+                    .tags(Set.of(electronics, iot, dataScience))
+                    .build();
+
+            Resource aiLaptop = Resource.builder()
+                    .name("AI Workstation Laptop")
+                    .type("Development Laptop")
+                    .assetCode("DATA-2026-05")
+                    .quantity(3)
+                    .tags(Set.of(dataScience, softwareLab))
+                    .build();
+
+            Resource networkKit = Resource.builder()
+                    .name("Cybersecurity Network Lab Kit")
+                    .type("Network Kit")
+                    .assetCode("CYBER-2026-06")
+                    .quantity(2)
+                    .tags(Set.of(cybersecurity, electronics))
+                    .build();
+
+            Resource microphoneSet = Resource.builder()
+                    .name("Wireless Microphone Set")
+                    .type("Audio Kit")
+                    .assetCode("MEDIA-2026-07")
+                    .quantity(4)
+                    .tags(Set.of(media, collaboration))
+                    .build();
+
+            Resource graphicsTablet = Resource.builder()
+                    .name("UI Design Graphics Tablet")
+                    .type("Design Device")
+                    .assetCode("GL-2026-08")
+                    .quantity(3)
+                    .tags(Set.of(softwareLab, collaboration))
+                    .build();
+
+            resourceRepository.saveAll(List.of(
+                    cameraKit,
+                    arduinoBox,
+                    projector,
+                    raspberryPiCluster,
+                    aiLaptop,
+                    networkKit,
+                    microphoneSet,
+                    graphicsTablet
+            ));
 
             Student montassar = Student.builder()
                     .username("montassar")
