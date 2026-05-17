@@ -12,6 +12,7 @@ import com.academic.smartlibrary.exception.BusinessException;
 import com.academic.smartlibrary.exception.ResourceNotFoundException;
 import com.academic.smartlibrary.repository.StudentRepository;
 import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +21,16 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final AppProperties appProperties;
+    private final PasswordEncoder passwordEncoder;
 
-    public StudentService(StudentRepository studentRepository, AppProperties appProperties) {
+    public StudentService(
+            StudentRepository studentRepository,
+            AppProperties appProperties,
+            PasswordEncoder passwordEncoder
+    ) {
         this.studentRepository = studentRepository;
         this.appProperties = appProperties;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<StudentResponse> findAll() {
@@ -75,7 +82,8 @@ public class StudentService {
 
         student.setUsername(request.username());
         student.setEmail(request.email());
-        student.setPassword(request.password());
+        validatePasswordLength(request.password().trim());
+        student.setPassword(passwordEncoder.encode(request.password().trim()));
 
         StudentProfile profile = student.getProfile();
         if (profile == null) {
@@ -130,7 +138,7 @@ public class StudentService {
 
         String normalizedPassword = password.trim();
         validatePasswordLength(normalizedPassword);
-        return normalizedPassword;
+        return passwordEncoder.encode(normalizedPassword);
     }
 
     private void validatePasswordLength(String password) {

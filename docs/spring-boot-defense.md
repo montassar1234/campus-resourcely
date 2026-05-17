@@ -212,6 +212,10 @@ Use this answer:
 
 “Authentication is handled in the Spring Boot backend. Students and admins log in through `/api/auth/student/login` or `/api/auth/admin/login`. The backend creates a JWT containing the user role, then `JwtAuthenticationFilter` reads that token on every protected request. `SecurityConfig` decides which endpoints require `ADMIN` or `STUDENT` access.”
 
+Passwords are stored with BCrypt:
+
+“The application defines a `PasswordEncoder` bean using BCrypt. New passwords are encoded before saving, and login uses `passwordEncoder.matches(rawPassword, hashedPassword)` instead of comparing plain text.”
+
 Important files:
 
 - `AuthController`
@@ -307,7 +311,7 @@ Answer:
 
 Answer:
 
-“The main limitation is that demo passwords are not hashed with BCrypt yet. Authentication itself is implemented in the backend with JWT and role-based access control.”
+“The project now hashes passwords with BCrypt. A remaining limitation is that it does not yet include production account features such as password reset, email verification, or audit logs for login attempts.”
 
 ## 18. Best Final Summary
 

@@ -18,6 +18,7 @@ import java.util.Set;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class DataSeeder {
@@ -28,7 +29,8 @@ public class DataSeeder {
             AdminAccountRepository adminAccountRepository,
             ResourceTagRepository resourceTagRepository,
             ResourceRepository resourceRepository,
-            ReservationRepository reservationRepository
+            ReservationRepository reservationRepository,
+            PasswordEncoder passwordEncoder
     ) {
         return args -> {
             // Keep demo logins available even if the inventory data was already inserted earlier.
@@ -36,12 +38,12 @@ public class DataSeeder {
                 adminAccountRepository.saveAll(List.of(
                     AdminAccount.builder()
                             .username("admin")
-                            .password("admin123")
+                            .password(passwordEncoder.encode("admin123"))
                             .displayName("Admin Staff")
                             .build(),
                     AdminAccount.builder()
                             .username("test")
-                            .password("test")
+                            .password(passwordEncoder.encode("test"))
                             .displayName("Test Admin")
                             .build()
                 ));
@@ -86,7 +88,7 @@ public class DataSeeder {
             Student montassar = Student.builder()
                     .username("montassar")
                     .email("montassar@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Montassar Zouaghi")
                             .phone("+21620100101")
@@ -98,7 +100,7 @@ public class DataSeeder {
             Student ilyes = Student.builder()
                     .username("ilyes")
                     .email("ilyes@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Ilyes Ouni")
                             .phone("+21622100102")
@@ -110,7 +112,7 @@ public class DataSeeder {
             Student hichem = Student.builder()
                     .username("hichem")
                     .email("hichem@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Hichem Sboui")
                             .phone("+21624100103")
@@ -122,7 +124,7 @@ public class DataSeeder {
             Student yassine = Student.builder()
                     .username("yahyaoui")
                     .email("y.ahyaoui@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Yassine Ahyaoui")
                             .phone("+21625100104")
@@ -134,7 +136,7 @@ public class DataSeeder {
             Student sara = Student.builder()
                     .username("skhider")
                     .email("s.khider@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Sara Khider")
                             .phone("+21627100105")
@@ -146,7 +148,7 @@ public class DataSeeder {
             Student nour = Student.builder()
                     .username("nmansouri")
                     .email("n.mansouri@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Nour Mansouri")
                             .phone("+21628100106")
@@ -158,7 +160,7 @@ public class DataSeeder {
             Student mariem = Student.builder()
                     .username("mtrabelsi")
                     .email("m.trabelsi@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Mariem Trabelsi")
                             .phone("+21629100107")
@@ -170,7 +172,7 @@ public class DataSeeder {
             Student aziz = Student.builder()
                     .username("agharbi")
                     .email("a.gharbi@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Aziz Gharbi")
                             .phone("+21650100108")
@@ -182,7 +184,7 @@ public class DataSeeder {
             Student lina = Student.builder()
                     .username("lsaidi")
                     .email("l.saidi@tek-up.tn")
-                    .password("student123")
+                    .password(passwordEncoder.encode("student123"))
                     .profile(StudentProfile.builder()
                             .fullName("Lina Saidi")
                             .phone("+21655100109")

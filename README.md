@@ -417,12 +417,12 @@ Short version:
 
 - Authentication is implemented in the Spring Boot backend with JWT tokens and role-based access control.
 - Database is local XAMPP MySQL for persistent demo data
-- Passwords are stored plainly for academic/demo scope, not production security
+- Passwords are stored with BCrypt hashes in MySQL.
 - Frontend is React in this repository, not Angular
 
 ## Suggested Next Improvements
 
-- Hash passwords with BCrypt before production use.
+- Add password reset and stronger account lifecycle management.
 - Add migration scripts with Flyway or Liquibase
 - Add Docker and deployment
 - Add file upload for resource images

@@ -13,7 +13,9 @@ import com.academic.smartlibrary.exception.BusinessException;
 import com.academic.smartlibrary.repository.AdminAccountRepository;
 import com.academic.smartlibrary.repository.StudentRepository;
 import com.academic.smartlibrary.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -21,19 +23,28 @@ public class AuthService {
     private final AdminAccountRepository adminAccountRepository;
     private final StudentRepository studentRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(AdminAccountRepository adminAccountRepository, StudentRepository studentRepository, JwtService jwtService) {
+    public AuthService(
+            AdminAccountRepository adminAccountRepository,
+            StudentRepository studentRepository,
+            JwtService jwtService,
+            PasswordEncoder passwordEncoder
+    ) {
         this.adminAccountRepository = adminAccountRepository;
         this.studentRepository = studentRepository;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public AuthResponse loginAdmin(AdminLoginRequest request) {
         AdminAccount admin = adminAccountRepository.findByUsernameIgnoreCase(request.username())
                 .orElseThrow(() -> new BusinessException("Invalid admin credentials"));
-        if (!admin.getPassword().equals(request.password())) {
+        if (!passwordMatches(request.password(), admin.getPassword())) {
             throw new BusinessException("Invalid admin credentials");
         }
+        upgradeLegacyAdminPassword(admin, request.password());
         // The role is embedded in the token and enforced by SecurityConfig.
         AuthUserResponse user = new AuthUserResponse(
                 admin.getId(),
@@ -49,9 +60,10 @@ public class AuthService {
     public AuthResponse loginStudent(StudentLoginRequest request) {
         Student student = studentRepository.findByEmail(request.email())
                 .orElseThrow(() -> new BusinessException("Invalid email or password"));
-        if (!student.getPassword().equals(request.password())) {
+        if (!passwordMatches(request.password(), student.getPassword())) {
             throw new BusinessException("Invalid email or password");
         }
+        upgradeLegacyStudentPassword(student, request.password());
         AuthUserResponse user = new AuthUserResponse(
                 student.getId(),
                 student.getUsername(),
@@ -61,6 +73,30 @@ public class AuthService {
                 toProfile(student.getProfile())
         );
         return new AuthResponse(jwtService.generateToken(student.getId(), student.getEmail(), UserRole.STUDENT), user);
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (storedPassword == null) {
+            return false;
+        }
+        if (storedPassword.startsWith("$2")) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return storedPassword.equals(rawPassword);
+    }
+
+    private void upgradeLegacyAdminPassword(AdminAccount admin, String rawPassword) {
+        if (admin.getPassword() != null && !admin.getPassword().startsWith("$2")) {
+            admin.setPassword(passwordEncoder.encode(rawPassword));
+            adminAccountRepository.save(admin);
+        }
+    }
+
+    private void upgradeLegacyStudentPassword(Student student, String rawPassword) {
+        if (student.getPassword() != null && !student.getPassword().startsWith("$2")) {
+            student.setPassword(passwordEncoder.encode(rawPassword));
+            studentRepository.save(student);
+        }
     }
 
     private StudentProfileResponse toProfile(StudentProfile profile) {
