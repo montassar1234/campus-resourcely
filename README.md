@@ -312,8 +312,8 @@ Demo student phone numbers use the Tunisian `+216` format so the seed data match
 
 ### Students
 
-- `aminah@tek-up.tn` / `aminah123`
-- `david@tek-up.tn` / `david123`
+- `aminah@tek-up.tn` / `student123`
+- `david@tek-up.tn` / `student123`
 - `m.benali@tek-up.tn` / `student123`
 - `y.ahyaoui@tek-up.tn` / `student123`
 - `s.khider@tek-up.tn` / `student123`
