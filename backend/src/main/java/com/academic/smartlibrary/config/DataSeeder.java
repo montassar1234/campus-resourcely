@@ -91,7 +91,7 @@ public class DataSeeder {
                             .fullName("Montassar Zouaghi")
                             .phone("+21620100101")
                             .department("Computer Science")
-                            .level("Level 400")
+                            .level("ING-4-S-SDIA-B")
                             .build())
                     .build();
 
@@ -103,7 +103,7 @@ public class DataSeeder {
                             .fullName("Ilyes Ouni")
                             .phone("+21622100102")
                             .department("Software Engineering")
-                            .level("Level 300")
+                            .level("ING-4-S-SDIA-B")
                             .build())
                     .build();
 
@@ -115,7 +115,7 @@ public class DataSeeder {
                             .fullName("Hichem Sboui")
                             .phone("+21624100103")
                             .department("Computer Science")
-                            .level("L3")
+                            .level("ING-4-S-SDIA-B")
                             .build())
                     .build();
 
