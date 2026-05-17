@@ -149,7 +149,7 @@ export function StudentsPage() {
                 )}
                 {student.profile?.level && (
                   <div className="flex items-center gap-2">
-                    <GraduationCap className="h-3.5 w-3.5" /> Level {student.profile.level}
+                    <GraduationCap className="h-3.5 w-3.5" /> {student.profile.level}
                   </div>
                 )}
               </div>
@@ -304,11 +304,14 @@ function StudentFormDialog({
             <Field label="Department" error={errors.department?.message}>
               <Input
                 {...register("department", { required: "Required" })}
-                placeholder="e.g. Computer Science"
+                placeholder="e.g. SDIA, GL, CYBER"
               />
             </Field>
             <Field label="Level" error={errors.level?.message}>
-              <Input {...register("level", { required: "Required" })} placeholder="e.g. L3, M1" />
+              <Input
+                {...register("level", { required: "Required" })}
+                placeholder="e.g. ING-4-S-SDIA-B"
+              />
             </Field>
           </div>
           <DialogFooter>

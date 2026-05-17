@@ -312,12 +312,19 @@ Demo student phone numbers use the Tunisian `+216` format so the seed data match
 
 ### Students
 
-- `aminah@tek-up.tn` / `student123`
-- `david@tek-up.tn` / `student123`
-- `m.benali@tek-up.tn` / `student123`
+- `montassar@tek-up.tn` / `student123`
+- `ilyes@tek-up.tn` / `student123`
+- `hichem@tek-up.tn` / `student123`
 - `y.ahyaoui@tek-up.tn` / `student123`
 - `s.khider@tek-up.tn` / `student123`
 - `n.mansouri@tek-up.tn` / `student123`
+- `m.trabelsi@tek-up.tn` / `student123`
+- `a.gharbi@tek-up.tn` / `student123`
+- `l.saidi@tek-up.tn` / `student123`
+
+Student profile levels follow the TEK-UP format `ING-year-schedule-branch-group`.
+For example, `ING-4-S-SDIA-B` means engineering year 4, evening classes, SDIA branch, group B.
+The demo branches are `SDIA`, `GL`, and `CYBER`.
 
 ## Main API Areas
 
