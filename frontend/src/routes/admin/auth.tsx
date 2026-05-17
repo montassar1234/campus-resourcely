@@ -55,15 +55,8 @@ function AdminAuthPage() {
         <section className="rounded-3xl border border-border bg-card p-6 shadow-elevated md:p-8">
           <h2 className="font-display text-2xl font-semibold">Admin sign in</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Use the demo credentials below to unlock the administration area.
+            Enter your administrator account to unlock the administration area.
           </p>
-
-          <div className="mt-4 rounded-2xl border border-dashed border-border bg-secondary/40 p-4 text-xs text-muted-foreground">
-            Demo credentials: <span className="font-medium text-foreground">admin</span> /{" "}
-            <span className="font-medium text-foreground">admin123</span> or{" "}
-            <span className="font-medium text-foreground">test</span> /{" "}
-            <span className="font-medium text-foreground">test</span>
-          </div>
 
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
